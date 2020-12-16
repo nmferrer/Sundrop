@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/spBackground"
+    tools:context=".SinglePlayerActivity">
+
+    <ImageView
+        android:id="@+id/unselected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Circle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/circle_no_selection" />
+
+    <ImageView
+        android:id="@+id/down_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_down_selection" />
+
+    <ImageView
+        android:id="@+id/up_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_up_selection" />
+
+    <ImageView
+        android:id="@+id/right_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_right_selection" />
+
+    <ImageView
+        android:id="@+id/left_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_left_selection" />
+
+    <ImageView
+        android:id="@+id/upright_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_upright_selection" />
+
+    <ImageView
+        android:id="@+id/downright_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_botright_selection" />
+
+    <ImageView
+        android:id="@+id/downleft_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_botleft_selection" />
+
+    <ImageView
+        android:id="@+id/upleft_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/unselected"
+        app:layout_constraintTop_toTopOf="@+id/unselected"
+        app:srcCompat="@drawable/circle_topleft_selection" />
+</androidx.constraintlayout.widget.ConstraintLayout>
