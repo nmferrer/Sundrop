@@ -4,20 +4,30 @@ public class UserInfo {
     private String UID;
     private String displayName;
     private String email;
-    private String status;
+    private String seeking;
+    private String availability;
 
     public UserInfo() {
         UID = null;
         displayName = null;
         email = null;
-        status = null;
+        seeking = null;
     }
-    public UserInfo(String UID, String email, String username) {
+    public UserInfo(String UID, String email, String displayName) {
         this.UID = UID;
         this.email = email;
-        this.displayName = username;
-        status = null;
+        this.displayName = displayName;
+        seeking = null;
+        availability = null;
     }
+    public UserInfo(String UID, String email, String displayName, String seeking, String availability) {
+        this.UID = UID;
+        this.email = email;
+        this.displayName = displayName;
+        this.seeking = seeking;
+        this.availability = availability;
+    }
+
 
     public String getUID() {
         return UID;
@@ -31,8 +41,12 @@ public class UserInfo {
         return email;
     }
 
-    public String getStatus() {
-        return status;
+    public String getSeeking() {
+        return seeking;
+    }
+
+    public String getAvailability() {
+        return availability;
     }
 
     public void setUID(String UID) {
@@ -47,7 +61,11 @@ public class UserInfo {
         this.email = email;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setSeeking(String seeking) {
+        this.seeking = seeking;
+    }
+
+    public void setAvailability(String availability) {
+        this.availability = availability;
     }
 }

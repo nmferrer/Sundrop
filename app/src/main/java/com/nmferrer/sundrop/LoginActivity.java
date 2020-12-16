@@ -43,8 +43,8 @@ public class LoginActivity extends AppCompatActivity {
 
         Log.d(TAG, "initializeFirebase:success");
 
-        fieldEmail = findViewById(R.id.edittextEmail);
-        fieldPassword = findViewById(R.id.edittextPassword);
+        fieldEmail = findViewById(R.id.editTextEmail);
+        fieldPassword = findViewById(R.id.editTextPassword);
         createAccountButton = findViewById(R.id.createAccountButton);
         signInButton = findViewById(R.id.signInButton);
 

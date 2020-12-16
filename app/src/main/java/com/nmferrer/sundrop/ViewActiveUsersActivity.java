@@ -8,9 +8,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,6 +24,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -36,8 +40,14 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private ArrayList<String> listItems = new ArrayList<String>();
     ArrayAdapter<String> adapter;
 
-    private final String TAG = "LISTENER_DEBUG";
+    private final String TAG = "SEEKING_USERS_DEBUG";
     private boolean isOnline = false;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        listItems.clear(); //listItems must update on activity creation
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +63,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         lv = findViewById(R.id.userDynamicList);
         optInButton = findViewById(R.id.optIn);
         signOutButton = findViewById(R.id.signOut);
+
+        lv.setClickable(true);
 
         //Listener Setup
         optInButton.setOnClickListener(new View.OnClickListener() {
@@ -84,9 +96,21 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                     Log.d(TAG, "databaseAccessSuccessful");
                     toRemove.removeValue();
                     Log.d(TAG, "databaseSignOutSuccessful");
+                    isOnline = false;
                 }
                 
                 launchHome();
+            }
+        });
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
+                        Toast.LENGTH_SHORT).show();
+
+                //using displayName, query for UserInfo
+                //display info as popup
             }
         });
 
