@@ -22,26 +22,30 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
-    private FirebaseDatabase database;
     private DatabaseReference databaseRef;
 
     private ListView lv;
     private Button optInButton;
+    private Button homeButton;
     private Button signOutButton;
 
-    private ChildEventListener childEventListener;
+    private ChildEventListener childEventListenerActiveUsers;
+    private ValueEventListener profileListener;
     private ArrayList<String> listItems = new ArrayList<String>();
     ArrayAdapter<String> adapter;
 
     private final String TAG = "SEEKING_USERS_DEBUG";
     private boolean isOnline = false;
+    private UserInfo userInfo;
+
+    //TODO: DETACH LISTENERS UPON ACTIVITY SWITCH?
 
     @Override
     public void onStart() {
@@ -62,9 +66,27 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         //UI Setup
         lv = findViewById(R.id.userDynamicList);
         optInButton = findViewById(R.id.optIn);
+        homeButton = findViewById(R.id.home);
         signOutButton = findViewById(R.id.signOut);
 
         lv.setClickable(true);
+
+        //QUERY CURRENT USER'S PROFILE
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            String UID = currentUser.getUid();
+            profileListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    userInfo = snapshot.getValue(UserInfo.class);
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    //DATA ACCESS CANCELLED
+                }
+            };
+            databaseRef.child("Registered Users").child(UID).addValueEventListener(profileListener);
+        }
 
         //Listener Setup
         optInButton.setOnClickListener(new View.OnClickListener() {
@@ -73,10 +95,9 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 //ADD ENTRY TO DB
                 if (currentUser != null) {
                     String UID = currentUser.getUid();
-                    String name = Configuration.trimEmail(currentUser.getEmail());
                     databaseRef.child("Active Users")
                             .child(UID)
-                            .setValue(name);
+                            .setValue(userInfo);
 
                     isOnline = true;
                 } else {
@@ -85,6 +106,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             }
         });
 
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchHome();
+            }
+        });
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -103,6 +130,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             }
         });
 
+        //LISTVIEW SETUP
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -118,18 +146,17 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 android.R.layout.simple_list_item_1,
                 listItems);
         lv.setAdapter(adapter);
-
-        childEventListener = new ChildEventListener() {
+        childEventListenerActiveUsers = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 //pull added child
                 String UID = snapshot.getKey();
-                String name = snapshot.getValue(String.class);
+                UserInfo userInfo = snapshot.getValue(UserInfo.class);
                 Log.d(TAG, "ADD KEY: " + UID);
-                Log.d(TAG, "ADD VAL: " + name);
+                Log.d(TAG, "ADD VAL: " + userInfo.getDisplayName());
 
                 //update view
-                listItems.add(name);
+                listItems.add(userInfo.getDisplayName());
                 adapter.notifyDataSetChanged();
             }
 
@@ -137,12 +164,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 //pull removed child
                 String UID = snapshot.getKey();
-                String name = snapshot.getValue(String.class);
+                UserInfo userInfo = snapshot.getValue(UserInfo.class);
                 Log.d(TAG, "REM KEY: " + UID);
-                Log.d(TAG, "REM VAL: " + name);
+                Log.d(TAG, "REM VAL: " + userInfo.getDisplayName());
 
                 //update view
-                listItems.remove(name);
+                listItems.remove(userInfo.getDisplayName());
                 adapter.notifyDataSetChanged();
             }
 
@@ -156,11 +183,16 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         };
-        databaseRef.child("Active Users").addChildEventListener(childEventListener);
+        databaseRef.child("Active Users").addChildEventListener(childEventListenerActiveUsers);
     }
+
+    //IF USER DOES NOT SET displayName, THEN TRIM EMAIL BY DEFAULT
+    //TODO: SET DISPLAY NAME UPON ACCOUNT CREATION?
 
 
     private void launchHome() {
+        databaseRef.child("Active Users").removeEventListener(childEventListenerActiveUsers);
+        databaseRef.child("Registered Users").removeEventListener(profileListener);
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
     }

@@ -68,4 +68,6 @@ public class UserInfo {
     public void setAvailability(String availability) {
         this.availability = availability;
     }
+
+
 }

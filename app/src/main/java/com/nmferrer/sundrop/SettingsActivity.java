@@ -113,48 +113,39 @@ public class SettingsActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                 } else {
                     //TODO: UPDATE USER ENTRY IN DB
-                    String UID, updateDisplayName, updateEmail, updateSeeking, updateAvailability;
+                    final String UID, updateDisplayName, updateEmail, updateSeeking, updateAvailability;
                     UID = currentUser.getUid();
                     updateDisplayName  = editTextDisplayName.getText().toString();
                     updateEmail = editTextEmail.getText().toString(); //TODO: ALLOW USER TO UPDATE ACCOUNT EMAIL
                     updateSeeking = editTextSeeking.getText().toString();
                     updateAvailability = generateAvailabilityString();
 
-                    Toast.makeText(SettingsActivity.this, "Confirm pressed.",
-                            Toast.LENGTH_SHORT).show();
-
-                    //Trigger Alert Dialog
-                    AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-                    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            Toast.makeText(SettingsActivity.this, "Pog.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            Toast.makeText(SettingsActivity.this, "Not Pog.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    });
                     String updateConfirmationMessage =
                             "The following changes will be made to your profile:\n" +
                                     "Display Name: " + updateDisplayName + "\n" +
                                     "Email: " + updateEmail + "\n" +
                                     "Looking For: " + updateSeeking +" \n" +
-                                    "Availability:\n " + updateAvailability;
+                                    "Availability:\n" + updateAvailability;
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
+                    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            updateUserInfo = new UserInfo(UID, updateEmail, updateDisplayName, updateSeeking, updateAvailability);//Create UserInfo Struct
+                            databaseRef.child("Registered Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
+                            databaseRef.child("Active Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
+                        }
+                    });
+                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) { //Alert Dialog Denied
+                        }
+                    });
+
                     builder.setMessage(updateConfirmationMessage)
                             .setTitle("Confirm Profile Changes?");
                     AlertDialog dialog = builder.create();
                     dialog.show();
-
-                    //Alert Dialog Confirmed
-                    updateUserInfo = new UserInfo(UID, updateEmail, updateDisplayName, updateSeeking, updateAvailability);//Create UserInfo Struct
-                    databaseRef.child("Registered Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
-                    databaseRef.child("Active Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
-                    //Alert Dialog Denied
                 }
             }
         });
@@ -219,19 +210,19 @@ public class SettingsActivity extends AppCompatActivity {
         //check checkboxes
         //append appropriate times
         if (checkBoxSunday.isChecked())
-            userAvailability += "Sunday: " + editTextSunday.getText().toString() + "\n";
+            userAvailability += "\tSunday: " + editTextSunday.getText().toString() + "\n";
         if (checkBoxMonday.isChecked())
-            userAvailability += "Monday: " + editTextMonday.getText().toString() + "\n";
+            userAvailability += "\tMonday: " + editTextMonday.getText().toString() + "\n";
         if (checkBoxTuesday.isChecked())
-            userAvailability += "Tuesday: " + editTextTuesday.getText().toString() + "\n";
+            userAvailability += "\tTuesday: " + editTextTuesday.getText().toString() + "\n";
         if (checkBoxWednesday.isChecked())
-            userAvailability += "Wednesday: " + editTextWednesday.getText().toString() + "\n";
+            userAvailability += "\tWednesday: " + editTextWednesday.getText().toString() + "\n";
         if (checkBoxThursday.isChecked())
-            userAvailability += "Thursday: " + editTextThursday.getText().toString() + "\n";
+            userAvailability += "\tThursday: " + editTextThursday.getText().toString() + "\n";
         if (checkBoxFriday.isChecked())
-            userAvailability += "Friday: " + editTextFriday.getText().toString() + "\n";
+            userAvailability += "\tFriday: " + editTextFriday.getText().toString() + "\n";
         if (checkBoxSaturday.isChecked())
-            userAvailability += "Saturday: " + editTextSaturday.getText().toString() + "\n";
+            userAvailability += "\tSaturday: " + editTextSaturday.getText().toString() + "\n";
         return userAvailability;
     }
 

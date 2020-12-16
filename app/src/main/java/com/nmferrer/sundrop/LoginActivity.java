@@ -84,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this, "Account successfully created.",
                                     Toast.LENGTH_SHORT).show();
                             String UID = mAuth.getUid();
-                            UserInfo userInfo = new UserInfo(UID, email, null);
+                            UserInfo userInfo = new UserInfo(UID, email, trimEmail(email));
                             Log.d(TAG, "userInfoCreated:success");
 
                             databaseRef.child("Registered Users").child(UID).setValue(userInfo);
@@ -154,4 +154,13 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
     }
+
+    private String trimEmail(String email) {
+        int endIndex = email.indexOf('@');
+        if (endIndex != -1)
+            return email.substring(0, endIndex);
+        else
+            return email;
+    }
+
 }

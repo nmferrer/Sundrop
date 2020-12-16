@@ -4,23 +4,32 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class HomeActivity extends AppCompatActivity {
+
+    private FirebaseAuth mAuth;
 
     private Button onlineButton;
     private Button singlePlayerButton;
     private Button settingsButton;
     private Button gamerButton;
 
+    private final String TAG = "HOME_DEBUG";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        mAuth = FirebaseAuth.getInstance();
 
         onlineButton = findViewById(R.id.onlineButton);
         singlePlayerButton = findViewById(R.id.singlePlayerButton);
@@ -62,8 +71,17 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
     private void launchOnline() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
+        if (mAuth.getCurrentUser() == null) {
+            Log.d(TAG, "No user signed in. Launching login.");
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        } else {
+            Log.d(TAG, "User signed in. Launching party search.");
+            Log.d(TAG, "Email: " + mAuth.getCurrentUser().getEmail());
+            Intent intent = new Intent(this, ViewActiveUsersActivity.class);
+            startActivity(intent);
+        }
+
     }
 
     private void animateBackground() {
