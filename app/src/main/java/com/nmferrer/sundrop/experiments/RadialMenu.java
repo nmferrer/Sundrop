@@ -1,4 +1,4 @@
-package com.nmferrer.sundrop;
+package com.nmferrer.sundrop.experiments;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -9,9 +9,11 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.nmferrer.sundrop.R;
+
 //TODO: MAKE SELECTION MORE ACCURATE USING DY/DX\
 
-public class SinglePlayerActivity extends AppCompatActivity {
+public class RadialMenu extends AppCompatActivity {
     private static final String DEBUG_TAG = "Velocity";
     private VelocityTracker mVelocityTracker = null;
 

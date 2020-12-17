@@ -31,13 +31,14 @@
 
     <EditText
         android:id="@+id/editTextSeeking"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="I am looking for..."
         android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayoutTimeInput"
+        app:layout_constraintHorizontal_bias="0.583"
+        app:layout_constraintStart_toStartOf="@+id/linearLayoutTimeInput"
         app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
 
     <TextView
@@ -46,14 +47,12 @@
         android:layout_height="0dp"
         android:layout_marginStart="11dp"
         android:layout_marginLeft="11dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginRight="2dp"
         android:layout_marginBottom="5dp"
         android:text="Availability"
         android:textSize="25dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayoutDaySelection"
         app:layout_constraintEnd_toStartOf="@+id/linearLayoutTimeInput"
-        app:layout_constraintStart_toStartOf="@+id/editTextSeeking"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextSeeking" />
 
     <Button
@@ -63,7 +62,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Cancel"
+        android:text="Return"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -71,12 +70,12 @@
         android:id="@+id/buttonConfirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="26dp"
-        android:layout_marginLeft="26dp"
+        android:layout_marginEnd="77dp"
+        android:layout_marginRight="77dp"
         android:layout_marginBottom="16dp"
         android:text="Confirm Changes"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/buttonCancel" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/textViewTitle"
@@ -94,17 +93,13 @@
         android:id="@+id/linearLayoutDaySelection"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:layout_marginTop="41dp"
-        android:layout_marginEnd="2dp"
-        android:layout_marginRight="2dp"
         android:layout_marginBottom="42dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/buttonCancel"
         app:layout_constraintEnd_toStartOf="@+id/linearLayoutTimeInput"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextSeeking">
+        app:layout_constraintStart_toStartOf="@+id/buttonCancel"
+        app:layout_constraintTop_toTopOf="@+id/linearLayoutTimeInput">
 
         <CheckBox
             android:id="@+id/checkBoxSunday"
@@ -153,15 +148,15 @@
         android:id="@+id/linearLayoutTimeInput"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="43dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginTop="51dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginRight="1dp"
+        android:layout_marginBottom="53dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/linearLayoutDaySelection"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonConfirm"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/linearLayoutDaySelection"
-        app:layout_constraintTop_toTopOf="@+id/textViewAvailability">
+        app:layout_constraintStart_toEndOf="@+id/textViewAvailability"
+        app:layout_constraintTop_toTopOf="@+id/editTextSeeking">
 
         <EditText
             android:id="@+id/editTextSunday"

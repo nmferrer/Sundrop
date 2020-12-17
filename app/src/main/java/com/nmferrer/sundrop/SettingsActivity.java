@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -25,7 +26,8 @@ import com.google.firebase.database.ValueEventListener;
 /*
 User sets profile information here.
 DisplayName: Public username visible to all other users
-Email: User account email TODO: allow user to update and reconfirm email.
+Email: User account email
+    TODO: allow user to update and reconfirm email.
 Seeking: What does the user want to do?
 Availability: Times and days user is available.
 
@@ -64,8 +66,9 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText editTextSaturday;
 
     private UserInfo updateUserInfo;
-    private final String TAG = "LISTENER_DEBUG";
+    private final String TAG = "SETTINGS_DEBUG";
 
+    private String oldDisplayName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +101,7 @@ public class SettingsActivity extends AppCompatActivity {
         editTextTuesday = findViewById(R.id.editTextTuesday);
         editTextWednesday = findViewById(R.id.editTextWednesday);
         editTextThursday = findViewById(R.id.editTextThursday);
-        editTextFriday = findViewById(R.id.editTextSaturday);
+        editTextFriday = findViewById(R.id.editTextFriday);
         editTextSaturday = findViewById(R.id.editTextSaturday);
 
 
@@ -112,7 +115,6 @@ public class SettingsActivity extends AppCompatActivity {
                     Toast.makeText(SettingsActivity.this, "Email field must be filled.",
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    //TODO: UPDATE USER ENTRY IN DB
                     final String UID, updateDisplayName, updateEmail, updateSeeking, updateAvailability;
                     UID = currentUser.getUid();
                     updateDisplayName  = editTextDisplayName.getText().toString();
@@ -133,7 +135,16 @@ public class SettingsActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialogInterface, int i) {
                             updateUserInfo = new UserInfo(UID, updateEmail, updateDisplayName, updateSeeking, updateAvailability);//Create UserInfo Struct
                             databaseRef.child("Registered Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
+                            Log.d(TAG, "pushToRegUsers:Success");
+                            //TODO: THIS SHOULD ONLY EXECUTE IF USER IS "ONLINE"
                             databaseRef.child("Active Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
+                            Log.d(TAG, "pushToActiveUsers:Success");
+
+                            //IF displayName IS CHANGED, THEN DELETE OLD ENTRY
+                            if (!oldDisplayName.equals(updateDisplayName)) {
+                                Log.d(TAG, "deletionChangedName:Success");
+                            }
+                            Log.d(TAG, "pushToDisplayNameUID:Success");
                         }
                     });
                     builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -165,18 +176,21 @@ public class SettingsActivity extends AppCompatActivity {
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
         if (firebaseUser != null) {
             String UID = currentUser.getUid();
+
+            //WRITES TO REGISTERED USERS
             ValueEventListener profileListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     UserInfo savedInfo = snapshot.getValue(UserInfo.class);
                     editTextEmail.setText(savedInfo.getEmail());
-
                     if (savedInfo.getDisplayName() != null) {
                         editTextDisplayName.setText(savedInfo.getDisplayName());
                     }
                     if (savedInfo.getSeeking() != null) {
                         editTextSeeking.setText(savedInfo.getSeeking());
                     }
+
+                    oldDisplayName = savedInfo.getDisplayName(); //pull old displayName for comparison
                 }
 
                 @Override
@@ -188,13 +202,19 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //FROM HASH MAP OF LISTENERS, REMOVE EACH
+    }
+
     private boolean validateForm() {
         boolean valid = true;
         String email = editTextEmail.getText().toString();
         //String displayName = fieldDisplayName.getText().toString();
         //String status = fieldStatus.getText().toString();
 
-        //add time checks here?
+        //time checks here?
         if (TextUtils.isEmpty(email)) {
             editTextEmail.setError("Required.");
             valid = false;

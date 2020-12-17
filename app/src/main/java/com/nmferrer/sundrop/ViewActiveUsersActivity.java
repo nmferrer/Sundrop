@@ -2,8 +2,10 @@ package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +24,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -42,16 +45,13 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     ArrayAdapter<String> adapter;
 
     private final String TAG = "SEEKING_USERS_DEBUG";
+
     private boolean isOnline = false;
-    private UserInfo userInfo;
 
-    //TODO: DETACH LISTENERS UPON ACTIVITY SWITCH?
+    private UserInfo currentUserInfo;
+    private String currentUID;
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        listItems.clear(); //listItems must update on activity creation
-    }
+    //TODO: HASH MAP OF ALL LISTENERS, DETACH AT onStop()
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,35 +71,19 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
         lv.setClickable(true);
 
-        //QUERY CURRENT USER'S PROFILE
-        FirebaseUser firebaseUser = mAuth.getCurrentUser();
-        if (firebaseUser != null) {
-            String UID = currentUser.getUid();
-            profileListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    userInfo = snapshot.getValue(UserInfo.class);
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    //DATA ACCESS CANCELLED
-                }
-            };
-            databaseRef.child("Registered Users").child(UID).addValueEventListener(profileListener);
-        }
-
         //Listener Setup
         optInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //ADD ENTRY TO DB
+                Log.d(TAG, "isOnlineStatus:"+isOnline);
                 if (currentUser != null) {
-                    String UID = currentUser.getUid();
                     databaseRef.child("Active Users")
-                            .child(UID)
-                            .setValue(userInfo);
+                            .child(currentUID)
+                            .setValue(currentUserInfo);
 
                     isOnline = true;
+                    Log.d(TAG, "isOnlineStatus:"+isOnline+ " user:" + currentUID);
                 } else {
                     Log.d(TAG, "Opt-in failure.");
                 }
@@ -115,41 +99,58 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mAuth.signOut();
-                Log.d(TAG, "mAuthSignOutSuccessful");
-
+                Log.d(TAG, "signOutAttempt");
                 if (isOnline) {
-                    DatabaseReference toRemove = FirebaseDatabase.getInstance().getReference("Active Users/" + currentUser.getUid());
+                    DatabaseReference toRemove = FirebaseDatabase.getInstance().getReference().child("Active Users").child(currentUID);
                     Log.d(TAG, "databaseAccessSuccessful");
                     toRemove.removeValue();
                     Log.d(TAG, "databaseSignOutSuccessful");
                     isOnline = false;
                 }
-                
+                mAuth.signOut();
+                Log.d(TAG, "mAuthSignOutSuccessful");
+                Log.d(TAG, "profileSignOut:success");
                 launchHome();
             }
         });
 
-        //LISTVIEW SETUP
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
-                        Toast.LENGTH_SHORT).show();
-
-                //using displayName, query for UserInfo
-                //display info as popup
-            }
-        });
-
+        //Adapter setup
         adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 listItems);
         lv.setAdapter(adapter);
+
+    }
+
+    //IF USER DOES NOT SET displayName, THEN TRIM EMAIL BY DEFAULT
+    //TODO: SET DISPLAY NAME UPON ACCOUNT VERIFICATION?
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        listItems.clear(); //listItems must update on activity start
+
+        //QUERY CURRENT USER'S PROFILE
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            currentUID = currentUser.getUid();
+            profileListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    currentUserInfo = snapshot.getValue(UserInfo.class);
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    //DATA ACCESS CANCELLED
+                }
+            };
+            databaseRef.child("Registered Users").child(currentUID).addValueEventListener(profileListener); //attaches listener to current user
+        }
+
         childEventListenerActiveUsers = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                //pull added child
+                //pull added user
                 String UID = snapshot.getKey();
                 UserInfo userInfo = snapshot.getValue(UserInfo.class);
                 Log.d(TAG, "ADD KEY: " + UID);
@@ -162,7 +163,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                //pull removed child
+                //pull removed user
                 String UID = snapshot.getKey();
                 UserInfo userInfo = snapshot.getValue(UserInfo.class);
                 Log.d(TAG, "REM KEY: " + UID);
@@ -175,6 +176,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                //modify existing user
+                //update view
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -183,16 +186,116 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         };
-        databaseRef.child("Active Users").addChildEventListener(childEventListenerActiveUsers);
+        databaseRef.child("Active Users").addChildEventListener(childEventListenerActiveUsers); //attaches real-time listener to Active Users table
+
+        //ListView Setup
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String pressedDisplayName = ((TextView) view).getText().toString();
+
+                Log.d(TAG, "queryDisplayNameToUserInfoAttempt:" + pressedDisplayName);
+                //TODO: DETACH LISTENERS (SET UP HASH MAP AND REMOVE AT onStop)
+                Query queryUID = databaseRef.child("Registered Users").orderByChild("displayName").equalTo(pressedDisplayName).limitToFirst(1);
+                queryUID.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d(TAG, "queryDisplayNameToUserInfoAttemptDataChange");
+                        Log.d(TAG, "queryDisplayNameToUserInfoAttemptHasChildren " + snapshot.hasChildren());
+
+                        for (DataSnapshot dataSnapshot: snapshot.getChildren()) { //should only yield one result
+                            UserInfo qUserInfo = dataSnapshot.getValue(UserInfo.class);
+                            Log.d(TAG, "queryDisplayNameToUserInfoAttempt:Success " + qUserInfo.getUID());
+
+                            //BECAUSE ONLY ONE RESULT SHOULD OCCUR, SHOULD ONLY BE HANDLED ONCE
+                            generateAlertDialogUserInfo(qUserInfo.toString(), currentUser.getUid(), qUserInfo.getUID());
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+            }
+        });
     }
 
-    //IF USER DOES NOT SET displayName, THEN TRIM EMAIL BY DEFAULT
-    //TODO: SET DISPLAY NAME UPON ACCOUNT CREATION?
+    private void generateAlertDialogUserInfo(String userInfoString, final String senderUID, final String recipientUID) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ViewActiveUsersActivity.this);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //CHECK if invite already exists (SENDER_UID + _ + RECIPIENT_UID)
+                String currentSenderRecipient = senderUID + "_" + recipientUID;
+                String currentSenderRecipientReversed = recipientUID + "_" + senderUID;
 
+                //TODO: SET REDUNDANCY CHECKS!
+                /*
+                Query queryInvitation = databaseRef.child("Invitations").orderByChild("senderRecipient").equalTo(currentSenderRecipient);
+                queryInvitation.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d(TAG, "querySenderRecipientCheckHasChildren " + snapshot.hasChildren());
+                        if (snapshot.hasChildren()) {
+                            Toast.makeText(ViewActiveUsersActivity.this,
+                                    "You have already sent an invitation to this user.",
+                                    Toast.LENGTH_SHORT).show();
+                            return; //STOP, INVITATION EXISTS
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
+                Log.d(TAG, "querySenderRecipientCheckComplete");
+
+                Query queryInvitationReversed = databaseRef.child("Invitations").orderByChild("senderRecipient").equalTo(currentSenderRecipientReversed);
+                queryInvitationReversed.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d(TAG, "queryRecipientSenderCheckHasChildren " + snapshot.hasChildren());
+                        if (snapshot.hasChildren()) {
+                            Toast.makeText(ViewActiveUsersActivity.this,
+                                    "This user has already sent you an invitation!",
+                                    Toast.LENGTH_SHORT).show();
+                            return; //STOP, INVITATION EXISTS
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
+                Log.d(TAG, "queryRecipientSenderCheckComplete");
+                */
+
+                //CREATE invitation relationship
+                Invitation invitation = new Invitation(senderUID, recipientUID);
+                databaseRef.child("Invitations").child(currentSenderRecipient).setValue(invitation);
+
+                Toast.makeText(ViewActiveUsersActivity.this,
+                        "Invitation Sent!",
+                        Toast.LENGTH_SHORT).show();
+                //TODO: NOTE THAT THIS WILL ALWAYS SET VALUE BUT WILL NOT PRODUCE REDUNDANT ENTRIES
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) { //Alert Dialog Denied
+            }
+        });
+
+        builder.setMessage(userInfoString)
+                .setTitle("Invite to Party?");
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //FROM HASH MAP OF LISTENERS, REMOVE EACH
+        databaseRef.child("Active Users").removeEventListener(childEventListenerActiveUsers);   //real-time list query
+        databaseRef.child("Registered Users").child(currentUID).removeEventListener(profileListener);  //single-use profile query
+    }
 
     private void launchHome() {
-        databaseRef.child("Active Users").removeEventListener(childEventListenerActiveUsers);
-        databaseRef.child("Registered Users").removeEventListener(profileListener);
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
     }

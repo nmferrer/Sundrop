@@ -1,4 +1,4 @@
-package com.nmferrer.sundrop;
+package com.nmferrer.sundrop.experiments;
 
 public enum Direction {
     NORTH,

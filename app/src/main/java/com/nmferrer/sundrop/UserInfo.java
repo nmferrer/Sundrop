@@ -69,5 +69,10 @@ public class UserInfo {
         this.availability = availability;
     }
 
-
+    @Override
+    public String toString() {
+        return displayName + '\n' +
+                "Looking For: " + seeking + '\n' +
+                "Available:\n" + availability + '\n';
+    }
 }

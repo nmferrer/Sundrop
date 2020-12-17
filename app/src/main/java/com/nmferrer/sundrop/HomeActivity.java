@@ -8,19 +8,23 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.nmferrer.sundrop.experiments.RadialMenu;
 
 public class HomeActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
 
     private Button onlineButton;
-    private Button singlePlayerButton;
-    private Button settingsButton;
+    private Button profileButton;
+    private Button invitationsButton;
     private Button gamerButton;
+
+    private Button debugSignOutButton;
 
     private final String TAG = "HOME_DEBUG";
 
@@ -32,9 +36,10 @@ public class HomeActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         onlineButton = findViewById(R.id.onlineButton);
-        singlePlayerButton = findViewById(R.id.singlePlayerButton);
-        settingsButton = findViewById(R.id.settingsButton);
+        profileButton = findViewById(R.id.profileButton);
+        invitationsButton = findViewById(R.id.invitationsButton);
         gamerButton = findViewById(R.id.gamerButton);
+        debugSignOutButton = findViewById(R.id.debugSignOutButton);
 
         onlineButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,13 +47,7 @@ public class HomeActivity extends AppCompatActivity {
                 launchOnline();
             }
         });
-        singlePlayerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchSinglePlayer();
-            }
-        });
-        settingsButton.setOnClickListener(new View.OnClickListener() {
+        profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 launchSettings();
@@ -60,13 +59,42 @@ public class HomeActivity extends AppCompatActivity {
                 animateBackground();
             }
         });
+        invitationsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mAuth.getCurrentUser() != null) {
+                    launchInvitations();
+                } else {
+                    Toast.makeText(HomeActivity.this, "DEBUG: No user logged in.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        debugSignOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mAuth.getCurrentUser() != null) {
+                    Toast.makeText(HomeActivity.this, "DEBUG: User " + mAuth.getCurrentUser().getUid() + " signed out.",
+                            Toast.LENGTH_SHORT).show();
+                    mAuth.signOut();
+                } else {
+                    Toast.makeText(HomeActivity.this, "DEBUG: No user logged in.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void launchSinglePlayer() {
-        Intent intent = new Intent(this, SinglePlayerActivity.class);
+        Intent intent = new Intent(this, RadialMenu.class);
         startActivity(intent);
     }
     private void launchSettings() {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(HomeActivity.this, "No user logged in.",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
@@ -81,7 +109,17 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(this, ViewActiveUsersActivity.class);
             startActivity(intent);
         }
+    }
 
+    private void launchInvitations() {
+        if (mAuth.getCurrentUser() == null) {
+            Log.d(TAG, "No user signed in. Launching login.");
+
+        } else {
+            Log.d(TAG, "User signed in. Launching invitations.");
+            Intent intent = new Intent(this, ViewInvitations.class);
+            startActivity(intent);
+        }
     }
 
     private void animateBackground() {
