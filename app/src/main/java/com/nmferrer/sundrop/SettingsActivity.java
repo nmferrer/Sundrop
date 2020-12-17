@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,15 +15,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
 User sets profile information here.
@@ -57,18 +65,30 @@ public class SettingsActivity extends AppCompatActivity {
     private CheckBox checkBoxThursday;
     private CheckBox checkBoxFriday;
     private CheckBox checkBoxSaturday;
-    private EditText editTextSunday;
-    private EditText editTextMonday;
-    private EditText editTextTuesday;
-    private EditText editTextWednesday;
-    private EditText editTextThursday;
-    private EditText editTextFriday;
-    private EditText editTextSaturday;
+
+    private EditText editTextSundayStart;
+    private EditText editTextMondayStart;
+    private EditText editTextTuesdayStart;
+    private EditText editTextWednesdayStart;
+    private EditText editTextThursdayStart;
+    private EditText editTextFridayStart;
+    private EditText editTextSaturdayStart;
+    private EditText editTextSundayEnd;
+    private EditText editTextMondayEnd;
+    private EditText editTextTuesdayEnd;
+    private EditText editTextWednesdayEnd;
+    private EditText editTextThursdayEnd;
+    private EditText editTextFridayEnd;
+    private EditText editTextSaturdayEnd;
+
 
     private UserInfo updateUserInfo;
     private final String TAG = "SETTINGS_DEBUG";
 
     private String oldDisplayName;
+
+    private HashMap<DatabaseReference, ValueEventListener> mValueEventListenerMap;
+    private HashMap<DatabaseReference, ChildEventListener> mChildEventListenerMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +99,8 @@ public class SettingsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         databaseRef = FirebaseDatabase.getInstance().getReference();
+        mValueEventListenerMap = new HashMap<DatabaseReference, ValueEventListener>();
+        mChildEventListenerMap = new HashMap<DatabaseReference, ChildEventListener>();
 
         //UI Setup
         editTextDisplayName = findViewById(R.id.editTextDisplayName);
@@ -95,15 +117,40 @@ public class SettingsActivity extends AppCompatActivity {
         checkBoxFriday = findViewById(R.id.checkBoxFriday);
         checkBoxSaturday = findViewById(R.id.checkBoxSaturday);
 
-        //TODO: LET THESE BE TimePickerDialogs
-        editTextSunday = findViewById(R.id.editTextSunday);
-        editTextMonday = findViewById(R.id.editTextMonday);
-        editTextTuesday = findViewById(R.id.editTextTuesday);
-        editTextWednesday = findViewById(R.id.editTextWednesday);
-        editTextThursday = findViewById(R.id.editTextThursday);
-        editTextFriday = findViewById(R.id.editTextFriday);
-        editTextSaturday = findViewById(R.id.editTextSaturday);
+        editTextSundayStart = findViewById(R.id.editTextSundayStart);
+        editTextMondayStart = findViewById(R.id.editTextMondayStart);
+        editTextTuesdayStart = findViewById(R.id.editTextTuesdayStart);
+        editTextWednesdayStart = findViewById(R.id.editTextWednesdayStart);
+        editTextThursdayStart = findViewById(R.id.editTextThursdayStart);
+        editTextFridayStart = findViewById(R.id.editTextFridayStart);
+        editTextSaturdayStart = findViewById(R.id.editTextSaturdayStart);
 
+        editTextSundayEnd = findViewById(R.id.editTextSundayEnd);
+        editTextMondayEnd = findViewById(R.id.editTextMondayEnd);
+        editTextTuesdayEnd = findViewById(R.id.editTextTuesdayEnd);
+        editTextWednesdayEnd = findViewById(R.id.editTextWednesdayEnd);
+        editTextThursdayEnd = findViewById(R.id.editTextThursdayEnd);
+        editTextFridayEnd = findViewById(R.id.editTextFridayEnd);
+        editTextSaturdayEnd = findViewById(R.id.editTextSaturdayEnd);
+
+        //make this reusable
+        Log.d(TAG, "bindingEditTextOnClick");
+
+        SetTime timeSunStart    = new SetTime(editTextSundayStart,      SettingsActivity.this);
+        SetTime timeMonStart    = new SetTime(editTextMondayStart,      SettingsActivity.this);
+        SetTime timeTueStart    = new SetTime(editTextTuesdayStart,     SettingsActivity.this);
+        SetTime timeWedStart    = new SetTime(editTextWednesdayStart,   SettingsActivity.this);
+        SetTime timeThursStart  = new SetTime(editTextThursdayStart,    SettingsActivity.this);
+        SetTime timeFriStart    = new SetTime(editTextFridayStart,      SettingsActivity.this);
+        SetTime timeSatStart    = new SetTime(editTextSaturdayStart,    SettingsActivity.this);
+
+        SetTime timeSunEnd      = new SetTime(editTextSundayEnd,    SettingsActivity.this);
+        SetTime timeMonEnd      = new SetTime(editTextMondayEnd,    SettingsActivity.this);
+        SetTime timeTueEnd      = new SetTime(editTextTuesdayEnd,   SettingsActivity.this);
+        SetTime timeWedEnd      = new SetTime(editTextWednesdayEnd, SettingsActivity.this);
+        SetTime timeThursEnd    = new SetTime(editTextThursdayEnd,  SettingsActivity.this);
+        SetTime timeFriEnd      = new SetTime(editTextFridayEnd,    SettingsActivity.this);
+        SetTime timeSatEnd      = new SetTime(editTextSaturdayEnd,  SettingsActivity.this);
 
         //Listener Setup
         buttonConfirm.setOnClickListener(new View.OnClickListener() {
@@ -199,13 +246,23 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             };
             databaseRef.child("Registered Users").child(UID).addValueEventListener(profileListener);
+            mValueEventListenerMap.put(databaseRef.child("Registered Users").child(UID), profileListener);
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //FROM HASH MAP OF LISTENERS, REMOVE EACH
+        for (Map.Entry<DatabaseReference, ValueEventListener> entry: mValueEventListenerMap.entrySet()) {
+            DatabaseReference ref = entry.getKey();
+            ValueEventListener listener = entry.getValue();
+            ref.removeEventListener(listener);
+        }
+        for (Map.Entry<DatabaseReference, ChildEventListener> entry: mChildEventListenerMap.entrySet()) {
+            DatabaseReference ref = entry.getKey();
+            ChildEventListener listener = entry.getValue();
+            ref.removeEventListener(listener);
+        }
     }
 
     private boolean validateForm() {
@@ -230,24 +287,52 @@ public class SettingsActivity extends AppCompatActivity {
         //check checkboxes
         //append appropriate times
         if (checkBoxSunday.isChecked())
-            userAvailability += "\tSunday: " + editTextSunday.getText().toString() + "\n";
+            userAvailability += "\tSunday: " + editTextSundayStart.getText().toString()         + " to " + editTextSundayEnd.getText().toString()   +"\n";
         if (checkBoxMonday.isChecked())
-            userAvailability += "\tMonday: " + editTextMonday.getText().toString() + "\n";
+            userAvailability += "\tMonday: " + editTextMondayStart.getText().toString()         + " to " + editTextMondayEnd.getText().toString()   +"\n";
         if (checkBoxTuesday.isChecked())
-            userAvailability += "\tTuesday: " + editTextTuesday.getText().toString() + "\n";
+            userAvailability += "\tTuesday: " + editTextTuesdayStart.getText().toString()       + " to " + editTextTuesdayEnd.getText().toString()  +"\n";
         if (checkBoxWednesday.isChecked())
-            userAvailability += "\tWednesday: " + editTextWednesday.getText().toString() + "\n";
+            userAvailability += "\tWednesday: " + editTextWednesdayStart.getText().toString()   + " to " + editTextWednesdayEnd.getText().toString() +"\n";
         if (checkBoxThursday.isChecked())
-            userAvailability += "\tThursday: " + editTextThursday.getText().toString() + "\n";
+            userAvailability += "\tThursday: " + editTextThursdayStart.getText().toString()     + " to " + editTextThursdayEnd.getText().toString() +"\n";
         if (checkBoxFriday.isChecked())
-            userAvailability += "\tFriday: " + editTextFriday.getText().toString() + "\n";
+            userAvailability += "\tFriday: " + editTextFridayStart.getText().toString()         + " to " + editTextFridayEnd.getText().toString()   +"\n";
         if (checkBoxSaturday.isChecked())
-            userAvailability += "\tSaturday: " + editTextSaturday.getText().toString() + "\n";
+            userAvailability += "\tSaturday: " + editTextSaturdayStart.getText().toString()     + " to " + editTextSaturdayEnd.getText().toString() +"\n";
         return userAvailability;
     }
 
     private void launchHome() {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
+    }
+
+    //helper for TimePickerDialog. This is really clever.
+    //https://stackoverflow.com/questions/17901946/timepicker-dialog-from-clicking-edittext
+    class SetTime implements View.OnFocusChangeListener, TimePickerDialog.OnTimeSetListener {
+        private EditText editText;
+        private Calendar myCalendar;
+
+        public SetTime(EditText editText, Context ctx){
+            this.editText = editText;
+            this.editText.setOnFocusChangeListener(this);
+            this.myCalendar = Calendar.getInstance();
+        }
+
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if(hasFocus){
+                int hour = myCalendar.get(Calendar.HOUR_OF_DAY);
+                int minute = myCalendar.get(Calendar.MINUTE);
+                new TimePickerDialog(SettingsActivity.this, this, hour, minute, true).show();
+            }
+        }
+
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            this.editText.setText( hourOfDay + ":" + String.format("%02d", minute));
+        }
+
     }
 }
