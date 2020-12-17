@@ -12,6 +12,7 @@ public class UserInfo {
         displayName = null;
         email = null;
         seeking = null;
+        availability= null;
     }
     public UserInfo(String UID, String email, String displayName) {
         this.UID = UID;

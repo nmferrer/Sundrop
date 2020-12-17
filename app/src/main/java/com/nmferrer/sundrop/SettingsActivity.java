@@ -192,6 +192,7 @@ public class SettingsActivity extends AppCompatActivity {
                                 Log.d(TAG, "deletionChangedName:Success");
                             }
                             Log.d(TAG, "pushToDisplayNameUID:Success");
+                            launchHome();
                         }
                     });
                     builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -235,6 +236,23 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                     if (savedInfo.getSeeking() != null) {
                         editTextSeeking.setText(savedInfo.getSeeking());
+                    }
+                    if (savedInfo.getAvailability() != null) {
+                        //parse String and fill appropriate fields
+                        String temp = savedInfo.getAvailability().trim();
+                        String[] availabilityArr = temp.split("\n");
+                        for (String s: availabilityArr) {
+                            //STRINGS ARE GUARANTEED TO FOLLOW FORMAT (DAY: TIME TO TIME) AND BE OF SIZE 4
+                            //e.g. Thursday: 10:00 to 11:00
+                            s = s.trim();
+                            Log.d(TAG, s);
+                            String[] dayAndTime = s.split(" ");
+                            String day = dayAndTime[0];
+                            String startTime = dayAndTime[1];
+                            String endTime = dayAndTime[3];
+
+                            fillDateAndTimeFields(day, startTime, endTime);
+                        }
                     }
 
                     oldDisplayName = savedInfo.getDisplayName(); //pull old displayName for comparison
@@ -308,6 +326,46 @@ public class SettingsActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void fillDateAndTimeFields(String day, String timeStart, String timeEnd) {
+        switch (day) {
+            case "Sunday:":
+                editTextSundayStart.setText(timeStart);
+                editTextSundayEnd.setText(timeEnd);
+                Log.d(TAG,"fillSunday");
+                break;
+            case "Monday:":
+                editTextMondayStart.setText(timeStart);
+                editTextMondayEnd.setText(timeEnd);
+                Log.d(TAG,"fillMonday");
+                break;
+            case "Tuesday:":
+                editTextTuesdayStart.setText(timeStart);
+                editTextTuesdayEnd.setText(timeEnd);
+                Log.d(TAG,"fillTuesday");
+                break;
+            case "Wednesday:":
+                editTextWednesdayStart.setText(timeStart);
+                editTextWednesdayEnd.setText(timeEnd);
+                Log.d(TAG,"fillWednesday");
+                break;
+            case "Thursday:":
+                editTextThursdayStart.setText(timeStart);
+                editTextThursdayEnd.setText(timeEnd);
+                Log.d(TAG,"fillThursday");
+                break;
+            case "Friday:":
+                editTextFridayStart.setText(timeStart);
+                editTextFridayEnd.setText(timeEnd);
+                Log.d(TAG,"fillFriday");
+                break;
+            case "Saturday:":
+                editTextSaturdayStart.setText(timeStart);
+                editTextSaturdayEnd.setText(timeEnd);
+                Log.d(TAG,"fillSaturday");
+                break;
+            default:
+        }
+    }
     //helper for TimePickerDialog. This is really clever.
     //https://stackoverflow.com/questions/17901946/timepicker-dialog-from-clicking-edittext
     class SetTime implements View.OnFocusChangeListener, TimePickerDialog.OnTimeSetListener {
@@ -333,6 +391,5 @@ public class SettingsActivity extends AppCompatActivity {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             this.editText.setText( hourOfDay + ":" + String.format("%02d", minute));
         }
-
     }
 }

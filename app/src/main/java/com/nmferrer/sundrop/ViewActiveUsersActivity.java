@@ -28,6 +28,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -39,7 +41,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private Button homeButton;
     private Button signOutButton;
 
-    private ChildEventListener childEventListenerActiveUsers;
+    private ChildEventListener activeUsersListener;
     private ValueEventListener profileListener;
     private ArrayList<String> listItems = new ArrayList<String>();
     ArrayAdapter<String> adapter;
@@ -51,7 +53,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private UserInfo currentUserInfo;
     private String currentUID;
 
-    //TODO: HASH MAP OF ALL LISTENERS, DETACH AT onStop()
+    private HashMap<DatabaseReference, ValueEventListener> mValueEventListenerMap;
+    private HashMap<DatabaseReference, ChildEventListener> mChildEventListenerMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         databaseRef = FirebaseDatabase.getInstance().getReference();
+        mValueEventListenerMap = new HashMap<DatabaseReference, ValueEventListener>();
+        mChildEventListenerMap = new HashMap<DatabaseReference, ChildEventListener>();
 
         //UI Setup
         lv = findViewById(R.id.userDynamicList);
@@ -145,9 +150,10 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 }
             };
             databaseRef.child("Registered Users").child(currentUID).addValueEventListener(profileListener); //attaches listener to current user
+            mValueEventListenerMap.put(databaseRef.child("Registered Users").child(currentUID), profileListener);
         }
 
-        childEventListenerActiveUsers = new ChildEventListener() {
+        activeUsersListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 //pull added user
@@ -176,8 +182,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                //modify existing user
-                //update view
+                //Should I care for the change case? All transactions go by UID, which are constant.
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -186,7 +191,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         };
-        databaseRef.child("Active Users").addChildEventListener(childEventListenerActiveUsers); //attaches real-time listener to Active Users table
+        databaseRef.child("Active Users").addChildEventListener(activeUsersListener); //attaches real-time listener to Active Users table
+        mChildEventListenerMap.put(databaseRef.child("Active Users"), activeUsersListener);
 
         //ListView Setup
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -195,7 +201,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 String pressedDisplayName = ((TextView) view).getText().toString();
 
                 Log.d(TAG, "queryDisplayNameToUserInfoAttempt:" + pressedDisplayName);
-                //TODO: DETACH LISTENERS (SET UP HASH MAP AND REMOVE AT onStop)
                 Query queryUID = databaseRef.child("Registered Users").orderByChild("displayName").equalTo(pressedDisplayName).limitToFirst(1);
                 queryUID.addValueEventListener(new ValueEventListener() {
                     @Override
@@ -212,7 +217,9 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                         }
                     }
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
                 });
             }
         });
@@ -227,14 +234,15 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 String currentSenderRecipient = senderUID + "_" + recipientUID;
                 String currentSenderRecipientReversed = recipientUID + "_" + senderUID;
 
-                //TODO: SET REDUNDANCY CHECKS!
                 /*
+                //TODO: SET REDUNDANCY CHECKS!
                 Query queryInvitation = databaseRef.child("Invitations").orderByChild("senderRecipient").equalTo(currentSenderRecipient);
                 queryInvitation.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Log.d(TAG, "querySenderRecipientCheckHasChildren " + snapshot.hasChildren());
+                        Log.d(TAG, "querySenderRecipientCheckHasChildren A" + snapshot.hasChildren());
                         if (snapshot.hasChildren()) {
+                            Log.d(TAG, "querySenderRecipientCheckHasChildren A forceStop");
                             Toast.makeText(ViewActiveUsersActivity.this,
                                     "You have already sent an invitation to this user.",
                                     Toast.LENGTH_SHORT).show();
@@ -251,8 +259,9 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 queryInvitationReversed.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Log.d(TAG, "queryRecipientSenderCheckHasChildren " + snapshot.hasChildren());
+                        Log.d(TAG, "queryRecipientSenderCheckHasChildren B" + snapshot.hasChildren());
                         if (snapshot.hasChildren()) {
+                            Log.d(TAG, "queryRecipientSenderCheckHasChildren B forceStop");
                             Toast.makeText(ViewActiveUsersActivity.this,
                                     "This user has already sent you an invitation!",
                                     Toast.LENGTH_SHORT).show();
@@ -290,9 +299,17 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        //FROM HASH MAP OF LISTENERS, REMOVE EACH
-        databaseRef.child("Active Users").removeEventListener(childEventListenerActiveUsers);   //real-time list query
-        databaseRef.child("Registered Users").child(currentUID).removeEventListener(profileListener);  //single-use profile query
+        for (Map.Entry<DatabaseReference, ValueEventListener> entry: mValueEventListenerMap.entrySet()) {
+            DatabaseReference ref = entry.getKey();
+            ValueEventListener listener = entry.getValue();
+            ref.removeEventListener(listener);
+        }
+        for (Map.Entry<DatabaseReference, ChildEventListener> entry: mChildEventListenerMap.entrySet()) {
+            DatabaseReference ref = entry.getKey();
+            ChildEventListener listener = entry.getValue();
+            ref.removeEventListener(listener);
+        }
+
     }
 
     private void launchHome() {
