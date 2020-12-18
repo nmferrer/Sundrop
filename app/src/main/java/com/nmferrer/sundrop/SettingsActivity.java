@@ -128,7 +128,6 @@ public class SettingsActivity extends AppCompatActivity {
         editTextFridayEnd = findViewById(R.id.editTextFridayEnd);
         editTextSaturdayEnd = findViewById(R.id.editTextSaturdayEnd);
 
-        //make this reusable
         Log.d(TAG, "bindingEditTextOnClick");
 
         SetTime timeSunStart    = new SetTime(editTextSundayStart,      SettingsActivity.this);
@@ -385,32 +384,6 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.d(TAG,"fillSaturday");
                 break;
             default:
-        }
-    }
-    //helper for TimePickerDialog. This is really clever.
-    //https://stackoverflow.com/questions/17901946/timepicker-dialog-from-clicking-edittext
-    class SetTime implements View.OnFocusChangeListener, TimePickerDialog.OnTimeSetListener {
-        private EditText editText;
-        private Calendar myCalendar;
-
-        public SetTime(EditText editText, Context ctx){
-            this.editText = editText;
-            this.editText.setOnFocusChangeListener(this);
-            this.myCalendar = Calendar.getInstance();
-        }
-
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            if(hasFocus){
-                int hour = myCalendar.get(Calendar.HOUR_OF_DAY);
-                int minute = myCalendar.get(Calendar.MINUTE);
-                new TimePickerDialog(SettingsActivity.this, this, hour, minute, true).show();
-            }
-        }
-
-        @Override
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            this.editText.setText( hourOfDay + ":" + String.format("%02d", minute));
         }
     }
 }

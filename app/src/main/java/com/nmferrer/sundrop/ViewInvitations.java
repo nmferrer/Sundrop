@@ -110,22 +110,31 @@ public class ViewInvitations extends AppCompatActivity {
                         .child("sentInviteTo");
 
         Log.d(TAG, "sentReferenceInitialized");
+        //TODO: NOTE THAT INVITATIONS ARE CURRENTLY SPLIT BY UNDERSCORES, CHANGE DELIMITER LATER
+        //GUARANTEED: FOLLOWS FORM: DISPLAYNAME_DATE_TIME
         ChildEventListener sentInvitesListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Log.d(TAG, "eventListenerSentAdded");
-                String recipient = snapshot.getValue(String.class);
-                listSent.add(String.format("%s on DAY TIME", recipient));
+                String[] recipientDateTime = snapshot.getValue(String.class).split("_");
+                String recipient = recipientDateTime[0];
+                String date = recipientDateTime[1];
+                String time = recipientDateTime[2];
+                listSent.add(String.format("%s: %s %s", recipient, date, time));
                 adapterSent.notifyDataSetChanged();
                 Log.d(TAG, "eventListenerSentAddedSuccess");
 
             }
-
+            //TODO: NOTE THAT INVITATIONS ARE CURRENTLY SPLIT BY UNDERSCORES, CHANGE DELIMITER LATER
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 Log.d(TAG, "eventListenerSentRemoved");
-                String recipient = snapshot.getValue(String.class);
-                listSent.remove(String.format("%s on DAY TIME", recipient));
+                String[] recipientDateTime = snapshot.getValue(String.class).split("_");
+                String recipient = recipientDateTime[0];
+                String date = recipientDateTime[1];
+                String time = recipientDateTime[2];
+                listSent.add(String.format("%s: %s %s", recipient, date, time));
+
                 adapterSent.notifyDataSetChanged();
                 Log.d(TAG, "eventListenerSentRemovedSuccess");
 
@@ -154,20 +163,29 @@ public class ViewInvitations extends AppCompatActivity {
                         .child("receivedInviteFrom");
 
         Log.d(TAG, "recvReferenceInitialized");
+
+        //TODO: NOTE THAT INVITATIONS ARE CURRENTLY SPLIT BY UNDERSCORES, CHANGE DELIMITER LATER
         ChildEventListener receivedInvitesListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Log.d(TAG, "eventListenerReceivedAdded");
-                String sender = snapshot.getValue(String.class);
-                listRecv.add(String.format("%s on DAY TIME", sender));
+                String[] senderDateTime = snapshot.getValue(String.class).split("_");
+                String sender = senderDateTime[0];
+                String date = senderDateTime[1];
+                String time = senderDateTime[2];
+                listRecv.add(String.format("%s: %s %s", sender, date, time));
                 adapterSent.notifyDataSetChanged();
                 Log.d(TAG, "eventListenerReceivedAddedSuccess");
             }
+            //TODO: NOTE THAT INVITATIONS ARE CURRENTLY SPLIT BY UNDERSCORES, CHANGE DELIMITER LATER
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 Log.d(TAG, "eventListenerReceived");
-                String sender = snapshot.getValue(String.class);
-                listRecv.remove(String.format("%s on DAY TIME", sender));
+                String[] senderDateTime = snapshot.getValue(String.class).split("_");
+                String sender = senderDateTime[0];
+                String date = senderDateTime[1];
+                String time = senderDateTime[2];
+                listRecv.remove(String.format("%s: %s %s", sender, date, time));
                 adapterSent.notifyDataSetChanged();
                 Log.d(TAG, "eventListenerReceivedRemovedSuccess");
             }

@@ -4,17 +4,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +36,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,6 +101,10 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         signOutButton = findViewById(R.id.signOut);
 
         lv.setClickable(true);
+
+        //UI Setup: Date Time Picker
+        //https://stackoverflow.com/questions/2055509/how-to-create-a-date-and-time-picker-in-android/22626706#22626706
+        //TODO: EITHER HANDLE SCHEDULING THROUGH DIALOG POPUP OR BY NEW ACTIVITY
 
         //Listener Setup
         optInButton.setOnClickListener(new View.OnClickListener() {
@@ -277,13 +292,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
-                databaseRef.child("Registered Users").child(senderUID).child("sentInviteTo").child(recipientUID).setValue(recipientDisplayName); //set dname?
-                databaseRef.child("Registered Users").child(recipientUID).child("receivedInviteFrom").child(senderUID).setValue(senderDisplayName); //set dname?
-
-                Toast.makeText(ViewActiveUsersActivity.this,
-                        "Invitation Sent!",
-                        Toast.LENGTH_SHORT).show();
+                generateAlertDialogConfirmInvitation(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
                 //TODO: NOTE THAT THIS WILL ALWAYS SET VALUE BUT WILL NOT PRODUCE REDUNDANT ENTRIES
             }
         });
@@ -295,6 +304,48 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
         builder.setMessage(userInfoString)
                 .setTitle("Invite to Party?");
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void generateAlertDialogConfirmInvitation(final String senderUID, final String recipientUID, final String senderDisplayName, final String recipientDisplayName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ViewActiveUsersActivity.this);
+        LayoutInflater inflater = getLayoutInflater().from(ViewActiveUsersActivity.this);
+        View dialogView = inflater.inflate(R.layout.date_time_dialog, null);
+        builder.setView(dialogView);
+
+
+        final EditText editTextDate = dialogView.findViewById(R.id.editTextDate);
+        final EditText editTextTime = dialogView.findViewById(R.id.editTextTime);
+        SetDate dateInput = new SetDate(editTextDate, ViewActiveUsersActivity.this);
+        SetTime timeInput = new SetTime(editTextTime, ViewActiveUsersActivity.this);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //TAKE THE VALUES OF TIME AND CREATE INVITE STRING
+                //EditText editTextDate = new EditText(ViewActiveUsersActivity.this);
+                //EditText editTextTime = new EditText(ViewActiveUsersActivity.this);
+
+                String date = editTextDate.getText().toString();
+                String time = editTextTime.getText().toString();
+
+                String sentInviteToInfo = recipientDisplayName + "_" + date + "_" + time;
+                String receivedInviteFromInfo = senderDisplayName + "_" + date + "_" + time;
+                databaseRef.child("Registered Users").child(senderUID).child("sentInviteTo").child(recipientUID).setValue(sentInviteToInfo);
+                databaseRef.child("Registered Users").child(recipientUID).child("receivedInviteFrom").child(senderUID).setValue(receivedInviteFromInfo);
+
+                Toast.makeText(ViewActiveUsersActivity.this,
+                        "Invitation Sent!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.setTitle("Scheduling an Appointment");
         AlertDialog dialog = builder.create();
         dialog.show();
     }
