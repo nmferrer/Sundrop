@@ -47,11 +47,12 @@ Upon pressing "Confirm Changes," store all fields into a UserInfo class, push Us
     and update existing entry.
  */
 public class SettingsActivity extends AppCompatActivity {
-
+    //Firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private DatabaseReference databaseRef;
 
+    //UI
     private EditText editTextDisplayName;
     private EditText editTextEmail;
     private EditText editTextSeeking;
@@ -81,14 +82,16 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText editTextFridayEnd;
     private EditText editTextSaturdayEnd;
 
-
+    //Pulled Data
     private UserInfo updateUserInfo;
-    private final String TAG = "SETTINGS_DEBUG";
-
     private String oldDisplayName;
-
+    //Listeners
     private HashMap<DatabaseReference, ValueEventListener> mValueEventListenerMap;
     private HashMap<DatabaseReference, ChildEventListener> mChildEventListenerMap;
+    //Debug
+    private final String TAG = "SETTINGS_DEBUG";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,14 +111,6 @@ public class SettingsActivity extends AppCompatActivity {
         editTextSeeking = findViewById(R.id.editTextSeeking);
         buttonConfirm = findViewById(R.id.buttonConfirm);
         buttonCancel = findViewById(R.id.buttonCancel);
-
-        checkBoxSunday = findViewById(R.id.checkBoxSunday);
-        checkBoxMonday = findViewById(R.id.checkBoxMonday);
-        checkBoxTuesday = findViewById(R.id.checkBoxTuesday);
-        checkBoxWednesday = findViewById(R.id.checkBoxWednesday);
-        checkBoxThursday = findViewById(R.id.checkBoxThursday);
-        checkBoxFriday = findViewById(R.id.checkBoxFriday);
-        checkBoxSaturday = findViewById(R.id.checkBoxSaturday);
 
         editTextSundayStart = findViewById(R.id.editTextSundayStart);
         editTextMondayStart = findViewById(R.id.editTextMondayStart);
@@ -180,11 +175,15 @@ public class SettingsActivity extends AppCompatActivity {
                     builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            updateUserInfo = new UserInfo(UID, updateEmail, updateDisplayName, updateSeeking, updateAvailability);//Create UserInfo Struct
-                            databaseRef.child("Registered Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
+                            //TODO: ENSURE THIS DOES NOT OVERWRITE ADDITIONAL ENTRIES
+                            DatabaseReference updatedProfile = databaseRef.child("Registered Users").child(UID);
+                            updatedProfile.child("displayName").setValue(updateDisplayName);
+                            updatedProfile.child("email").setValue(updateEmail);
+                            updatedProfile.child("seeking").setValue(updateSeeking);
+                            updatedProfile.child("availability").setValue(updateAvailability);
+
                             Log.d(TAG, "pushToRegUsers:Success");
                             //TODO: THIS SHOULD ONLY EXECUTE IF USER IS "ONLINE"
-                            databaseRef.child("Active Users").child(UID).setValue(updateUserInfo); //Push updated info to respective entry
                             Log.d(TAG, "pushToActiveUsers:Success");
 
                             //IF displayName IS CHANGED, THEN DELETE OLD ENTRY
@@ -284,6 +283,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private boolean validateForm() {
+        //TODO: START TIMES MUST BE LESS THAN END TIMES
         boolean valid = true;
         String email = editTextEmail.getText().toString();
         //String displayName = fieldDisplayName.getText().toString();
@@ -304,20 +304,41 @@ public class SettingsActivity extends AppCompatActivity {
         String userAvailability = "";
         //check checkboxes
         //append appropriate times
-        if (checkBoxSunday.isChecked())
-            userAvailability += "\tSunday: " + editTextSundayStart.getText().toString()         + " to " + editTextSundayEnd.getText().toString()   +"\n";
-        if (checkBoxMonday.isChecked())
-            userAvailability += "\tMonday: " + editTextMondayStart.getText().toString()         + " to " + editTextMondayEnd.getText().toString()   +"\n";
-        if (checkBoxTuesday.isChecked())
-            userAvailability += "\tTuesday: " + editTextTuesdayStart.getText().toString()       + " to " + editTextTuesdayEnd.getText().toString()  +"\n";
-        if (checkBoxWednesday.isChecked())
-            userAvailability += "\tWednesday: " + editTextWednesdayStart.getText().toString()   + " to " + editTextWednesdayEnd.getText().toString() +"\n";
-        if (checkBoxThursday.isChecked())
-            userAvailability += "\tThursday: " + editTextThursdayStart.getText().toString()     + " to " + editTextThursdayEnd.getText().toString() +"\n";
-        if (checkBoxFriday.isChecked())
-            userAvailability += "\tFriday: " + editTextFridayStart.getText().toString()         + " to " + editTextFridayEnd.getText().toString()   +"\n";
-        if (checkBoxSaturday.isChecked())
-            userAvailability += "\tSaturday: " + editTextSaturdayStart.getText().toString()     + " to " + editTextSaturdayEnd.getText().toString() +"\n";
+        if (!TextUtils.isEmpty(editTextSundayStart.getText().toString())  && !TextUtils.isEmpty(editTextSundayEnd.getText().toString()))
+            userAvailability += "\tSunday: "
+                    + editTextSundayStart.getText().toString() + " to "
+                    + editTextSundayEnd.getText().toString()   + "\n";
+
+        if (!TextUtils.isEmpty(editTextMondayStart.getText().toString()) && !TextUtils.isEmpty(editTextMondayEnd.getText().toString()))
+            userAvailability += "\tMonday: "
+                    + editTextMondayStart.getText().toString() + " to "
+                    + editTextMondayEnd.getText().toString()   +"\n";
+
+        if (!TextUtils.isEmpty(editTextTuesdayStart.getText().toString()) && !TextUtils.isEmpty(editTextTuesdayEnd.getText().toString()))
+            userAvailability += "\tTuesday: "
+                    + editTextTuesdayStart.getText().toString() + " to "
+                    + editTextTuesdayEnd.getText().toString()   + "\n";
+
+        if (!TextUtils.isEmpty(editTextWednesdayStart.getText().toString())  && !TextUtils.isEmpty(editTextWednesdayEnd.getText().toString()))
+            userAvailability += "\tWednesday: "
+                    + editTextWednesdayStart.getText().toString()   + " to "
+                    + editTextWednesdayEnd.getText().toString()     + "\n";
+
+        if (!TextUtils.isEmpty(editTextThursdayStart.getText().toString())  && !TextUtils.isEmpty(editTextThursdayEnd.getText().toString()))
+            userAvailability += "\tThursday: "
+                    + editTextThursdayStart.getText().toString()+ " to "
+                    + editTextThursdayEnd.getText().toString()  + "\n";
+
+        if (!TextUtils.isEmpty(editTextFridayStart.getText().toString())  && !TextUtils.isEmpty(editTextFridayEnd.getText().toString()))
+            userAvailability += "\tFriday: "
+                    + editTextFridayStart.getText().toString() + " to "
+                    + editTextFridayEnd.getText().toString()   +"\n";
+
+        if (!TextUtils.isEmpty(editTextSaturdayStart.getText().toString()) && !TextUtils.isEmpty(editTextSaturdayEnd.getText().toString()))
+            userAvailability += "\tSaturday: "
+                    + editTextSaturdayStart.getText().toString() + " to "
+                    + editTextSaturdayEnd.getText().toString()   + "\n";
+
         return userAvailability;
     }
 

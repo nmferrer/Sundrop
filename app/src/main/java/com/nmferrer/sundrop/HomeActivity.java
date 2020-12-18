@@ -16,16 +16,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.nmferrer.sundrop.experiments.RadialMenu;
 
 public class HomeActivity extends AppCompatActivity {
-
+    //Firebase
     private FirebaseAuth mAuth;
 
+    //UI
     private Button onlineButton;
     private Button profileButton;
     private Button invitationsButton;
     private Button gamerButton;
-
     private Button debugSignOutButton;
 
+    //Debug
     private final String TAG = "HOME_DEBUG";
 
     @Override

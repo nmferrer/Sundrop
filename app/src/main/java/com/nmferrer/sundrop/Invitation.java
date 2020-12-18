@@ -1,47 +1,62 @@
 package com.nmferrer.sundrop;
 
 public class Invitation {
-    private String senderRecipient;
-    private String senderOnly;
-    private String recipientOnly;
+    private String pairSenderRecipient;
+    private UserInfo sender;
+    private UserInfo recipient;
+    private String day;
+    private String time;
 
     public Invitation() {
-        senderRecipient = null;
-        senderOnly = null;
-        recipientOnly = null;
-    }
-    public Invitation(String sender, String recipient) {
-        senderRecipient = sender + "_" + recipient;
-        senderOnly = sender;
-        recipientOnly = recipient;
+        this.pairSenderRecipient = null;
+        this.sender = null;
+        this.recipient = null;
+        this.day = null;
+        this.time = null;
     }
 
-    public String getSenderRecipient() {
-        return senderRecipient;
+    public Invitation(String pairSenderRecipient, UserInfo sender, UserInfo recipient, String day, String time) {
+        this.pairSenderRecipient = pairSenderRecipient;
+        this.sender = sender;
+        this.recipient = recipient;
+        this.day = day;
+        this.time = time;
     }
 
-    public void setSenderRecipient(String senderRecipient) {
-        this.senderRecipient = senderRecipient;
+    public UserInfo getSender() {
+        return sender;
     }
 
-    public String getSenderOnly() {
-        return senderOnly;
+    public void setSender(UserInfo sender) {
+        this.sender = sender;
     }
 
-    public void setSenderOnly(String senderOnly) {
-        this.senderOnly = senderOnly;
+    public UserInfo getRecipient() {
+        return recipient;
     }
 
-    public String getRecipientOnly() {
-        return recipientOnly;
+    public void setRecipient(UserInfo recipient) {
+        this.recipient = recipient;
     }
 
-    public void setRecipientOnly(String recipientOnly) {
-        this.recipientOnly = recipientOnly;
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 
     @Override
     public String toString() {
-        return senderOnly + " ->\n" + recipientOnly + "\n@ TIME O'CLOCK";
+        return String.format("%s -> %s %s %s", sender, recipient, day, time);
     }
 }

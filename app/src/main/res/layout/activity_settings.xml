@@ -7,11 +7,14 @@
     tools:context=".SettingsActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:id="@+id/linearLayout2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:orientation="vertical"
-        tools:layout_editor_absoluteX="255dp"
-        tools:layout_editor_absoluteY="1dp">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/textViewTitle"
@@ -54,16 +57,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="3">
-            <TextView
-                android:id="@+id/textViewAvailability"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Availability"
-                android:textSize="24dp"
-                tools:layout_editor_absoluteX="11dp"
-                tools:layout_editor_absoluteY="221dp" />
+            android:weightSum="2">
+            \
+
             <TextView
                 android:id="@+id/textViewStart"
                 android:layout_width="0dp"
@@ -73,6 +69,7 @@
                 android:textSize="24dp"
                 tools:layout_editor_absoluteX="11dp"
                 tools:layout_editor_absoluteY="221dp" />
+
             <TextView
                 android:id="@+id/textViewEnd"
                 android:layout_width="0dp"
@@ -87,83 +84,15 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="3">
-
-            <LinearLayout
-                android:id="@+id/linearLayoutDaySelection"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                tools:layout_editor_absoluteX="16dp"
-                tools:layout_editor_absoluteY="262dp">
-
-                <CheckBox
-                    android:id="@+id/checkBoxSunday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Sunday" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxMonday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Monday" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxTuesday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Tuesday" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxWednesday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Wednesday" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxThursday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Thursday" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxFriday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Friday" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxSaturday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Saturday" />
-
-                <Button
-                    android:id="@+id/buttonConfirm"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Confirm Changes"
-                    tools:layout_editor_absoluteX="180dp"
-                    tools:layout_editor_absoluteY="667dp" />
-
-                <Button
-                    android:id="@+id/buttonCancel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Return"
-                    tools:layout_editor_absoluteX="16dp"
-                    tools:layout_editor_absoluteY="667dp" />
-            </LinearLayout>
+            android:weightSum="2">
 
             <LinearLayout
                 android:id="@+id/linearLayoutTimeInput"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:orientation="vertical"
                 tools:layout_editor_absoluteX="211dp"
                 tools:layout_editor_absoluteY="221dp">
@@ -230,6 +159,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical">
+
                 <EditText
                     android:id="@+id/editTextSundayEnd"
                     android:layout_width="match_parent"
@@ -290,14 +220,29 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
+            <Button
+                android:id="@+id/buttonCancel"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Return"
+                tools:layout_editor_absoluteX="16dp"
+                tools:layout_editor_absoluteY="667dp" />
 
+            <Button
+                android:id="@+id/buttonConfirm"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Confirm Changes"
+                tools:layout_editor_absoluteX="180dp"
+                tools:layout_editor_absoluteY="667dp" />
+        </LinearLayout>
     </LinearLayout>
-
-    <![CDATA[
-
-    "
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-]]>
 </androidx.constraintlayout.widget.ConstraintLayout>
