@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -110,8 +111,10 @@ public class ViewInvitations extends AppCompatActivity {
                         .child("sentInviteTo");
 
         Log.d(TAG, "sentReferenceInitialized");
+
+        //ListView Fills: Sent Invites
         //TODO: NOTE THAT INVITATIONS ARE CURRENTLY SPLIT BY UNDERSCORES, CHANGE DELIMITER LATER
-        //GUARANTEED: FOLLOWS FORM: DISPLAYNAME_DATE_TIME
+        //FORMAT GUARANTEED: DISPLAYNAME_DATE_TIME
         ChildEventListener sentInvitesListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -164,6 +167,7 @@ public class ViewInvitations extends AppCompatActivity {
 
         Log.d(TAG, "recvReferenceInitialized");
 
+        //ListView Fills: Received Invites
         //TODO: NOTE THAT INVITATIONS ARE CURRENTLY SPLIT BY UNDERSCORES, CHANGE DELIMITER LATER
         ChildEventListener receivedInvitesListener = new ChildEventListener() {
             @Override
@@ -207,6 +211,14 @@ public class ViewInvitations extends AppCompatActivity {
         receivedInvitesRef.addChildEventListener(receivedInvitesListener);
         Log.d(TAG, "recvListenerAdded");
         mDatabaseRefChildEventListenerMap.put(receivedInvitesRef, receivedInvitesListener);
+
+
+        lvRecv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+            }
+        });
     }
 
 

@@ -87,6 +87,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         //Firebase Setup
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
+        currentUID = currentUser.getUid();
         databaseRef = FirebaseDatabase.getInstance().getReference();
 
         //Listener Setup
@@ -154,6 +155,64 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 listItems);
         lv.setAdapter(adapter);
 
+        //ListView Setup
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final String pressedDisplayName = ((TextView) view).getText().toString();
+
+                Log.d(TAG, "queryDisplayNameToUserInfoAttempt:" + pressedDisplayName);
+                Query queryUID = databaseRef.child("Registered Users").orderByChild("displayName").equalTo(pressedDisplayName).limitToFirst(1);
+                ValueEventListener queryUIDListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d(TAG, "queryDisplayNameToUserInfoAttemptDataChange");
+                        Log.d(TAG, "queryDisplayNameToUserInfoAttemptHasChildren " + snapshot.getChildrenCount());
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) { //should only yield one result
+
+                            UserInfo qUserInfo = dataSnapshot.getValue(UserInfo.class);
+                            Log.d(TAG, "accessQueriedUserAttempt");
+                            Log.d(TAG, ""+ qUserInfo.toString());
+                            Log.d(TAG, "accessQueriedUserSuccess");
+                            Log.d(TAG, "accessCurrentUserAttempt");
+                            Log.d(TAG, ""+ currentUserInfo.toString());
+                            Log.d(TAG, "accessCurrentUserSuccess");
+
+                            DataSnapshot pressedUserReceivedInvites = dataSnapshot.child("receivedInviteFrom"); //IS THIS EFFICIENT? (Pulling snapshot on a snapshot)
+                            Log.d(TAG,"generateAlertDialogAttempt");
+
+                            if (currentUserInfo.getUID().equals(qUserInfo.getUID())) { //CHECK: USER PRESSED SELF
+                                Toast.makeText(ViewActiveUsersActivity.this,
+                                        "Can't start a party by yourself!",
+                                        Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "generateAlertDialogRefusal:Call on Self");
+
+                            } else if(pressedUserReceivedInvites.hasChild(currentUID)) { //CHECK: USER ALREADY SENT INVITE
+                                Log.d(TAG, "pressedUserAlreadyHasInviteFromCurrent");
+                                Toast.makeText(ViewActiveUsersActivity.this,
+                                        "Invite already sent! " + pressedUserReceivedInvites.child(currentUID).getValue(String.class),
+                                        Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "generateAlertDialogRefusal:Invite Already Exists");
+
+                            } else {
+                                generateAlertDialogUserInfo(qUserInfo.toString(),
+                                        currentUID, qUserInfo.getUID(),
+                                        currentUserInfo.getDisplayName(),
+                                        qUserInfo.getDisplayName());
+                                Log.d(TAG, "generateAlertDialogSuccess");
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                };
+                queryUID.addListenerForSingleValueEvent(queryUIDListener); //SINGLE USE LISTENER, OTHERWISE REDUNDANT CALLS OCCUR
+            }
+        });
     }
 
     //IF USER DOES NOT SET displayName, THEN TRIM EMAIL BY DEFAULT
@@ -230,56 +289,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         };
         queryIsOnline.addChildEventListener(isOnlineListener); //attaches real-time listener to pull online users
         mQueryChildListenerMap.put(queryIsOnline, isOnlineListener);
-
-        //ListView Setup
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String pressedDisplayName = ((TextView) view).getText().toString();
-
-                Log.d(TAG, "queryDisplayNameToUserInfoAttempt:" + pressedDisplayName);
-                Query queryUID = databaseRef.child("Registered Users").orderByChild("displayName").equalTo(pressedDisplayName).limitToFirst(1);
-                ValueEventListener queryUIDListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Log.d(TAG, "queryDisplayNameToUserInfoAttemptDataChange");
-                        Log.d(TAG, "queryDisplayNameToUserInfoAttemptHasChildren " + snapshot.getChildrenCount());
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) { //should only yield one result
-
-                            UserInfo qUserInfo = dataSnapshot.getValue(UserInfo.class);
-                            Log.d(TAG, "accessQueriedUserAttempt");
-                            Log.d(TAG, ""+ qUserInfo.toString());
-                            Log.d(TAG, "accessQueriedUserSuccess");
-                            Log.d(TAG, "accessCurrentUserAttempt");
-                            Log.d(TAG, ""+ currentUserInfo.toString());
-                            Log.d(TAG, "accessCurrentUserSuccess");
-                            //BECAUSE ONLY ONE RESULT SHOULD OCCUR, SHOULD ONLY BE HANDLED ONCE
-
-                            Log.d(TAG,"generateAlertDialogAttempt");
-                            if (currentUserInfo.getUID().equals(qUserInfo.getUID())) {
-                                Toast.makeText(ViewActiveUsersActivity.this,
-                                        "Can't start a party by yourself!",
-                                        Toast.LENGTH_SHORT).show();
-                                Log.d(TAG, "generateAlertDialogRefusal:Call on Self");
-                            } else {
-                                generateAlertDialogUserInfo(qUserInfo.toString(),
-                                        currentUID, qUserInfo.getUID(),
-                                        currentUserInfo.getDisplayName(),
-                                        qUserInfo.getDisplayName());
-                                Log.d(TAG, "generateAlertDialogSuccess");
-                            }
-
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                };
-                queryUID.addListenerForSingleValueEvent(queryUIDListener); //SINGLE USE LISTENER, OTHERWISE REDUNDANT CALLS OCCUR
-            }
-        });
     }
 
     private void generateAlertDialogUserInfo(String userInfoString,
