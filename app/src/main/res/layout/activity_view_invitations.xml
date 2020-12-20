@@ -26,8 +26,8 @@
             android:id="@+id/textViewSent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sent Invites"
-            android:textSize="25dp" />
+            android:text="@string/sent_invites"
+            android:textSize="25sp" />
 
         <ListView
             android:id="@+id/listViewSent"
@@ -39,8 +39,8 @@
             android:id="@+id/textViewReceived"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Received Invites"
-            android:textSize="25dp" />
+            android:text="@string/received_invites"
+            android:textSize="25sp" />
 
         <ListView
             android:id="@+id/listViewReceived"
@@ -52,6 +52,6 @@
             android:id="@+id/homeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Home" />
+            android:text="@string/home" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

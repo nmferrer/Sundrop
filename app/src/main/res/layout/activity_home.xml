@@ -12,69 +12,95 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="132dp"
-        android:text="Sundrop"
-        android:textColor="@color/colorTitle"
-        android:textSize="50dp"
+        android:text="@string/sundrop"
+        android:textColor="@color/colorPrimary"
+        android:textSize="50sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/linearLayout3"
+
+    <RelativeLayout
+        android:id="@+id/relativeLayoutNavigation"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="19dp"
-        android:orientation="vertical"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
 
         <Button
             android:id="@+id/onlineButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Party Up" />
+            android:layout_above="@id/profileButton"
+            android:text="@string/party_finder" />
 
         <Button
             android:id="@+id/profileButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Profile" />
+            android:layout_above="@id/partySelect"
+            android:text="@string/profile" />
 
-        <Button
-            android:id="@+id/gamerButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Gamer Mode" />
 
         <LinearLayout
+            android:id="@+id/partySelect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_above="@id/homeButtonBar"
+            android:orientation="horizontal"
+            android:weightSum="1">
+
+            <Spinner
+                android:backgroundTint="@color/colorPrimary"
+                android:id="@+id/partySelectSpinner"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.75" />
+            <Button
+                android:id="@+id/partyConfirmButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="@string/parties" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/homeButtonBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:orientation="horizontal"
             android:weightSum="3">
 
             <Button
                 android:id="@+id/invitationsButton"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
 
                 android:layout_weight="1"
-                android:text="Invitations" />
+                android:text="@string/invitations" />
 
             <Button
-                android:id="@+id/button"
+                android:id="@+id/gamerButton"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Parties" />
+                android:text="@string/gamer_mode" />
 
             <Button
                 android:id="@+id/debugSignOutButton"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="debug Sign Out" />
+                android:text="@string/sign_out" />
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

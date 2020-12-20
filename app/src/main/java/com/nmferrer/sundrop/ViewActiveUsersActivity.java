@@ -64,7 +64,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private Button optInButton;
     private Button homeButton;
     private Button signOutButton;
-    private ArrayList<String> listItems = new ArrayList<String>();
+    private ArrayList<String> listItems = new ArrayList<>();
     ArrayAdapter<String> adapter;
 
     //Pulled Data
@@ -85,7 +85,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_active_users);
+        setContentView(R.layout.activity_view_active_users_relative);
 
         //Firebase Setup
         mAuth = FirebaseAuth.getInstance();

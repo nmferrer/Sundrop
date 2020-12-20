@@ -8,7 +8,6 @@
 package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -49,8 +48,8 @@ public class ViewInvitations extends AppCompatActivity {
     //UI
     private ListView lvSent, lvRecv;
     private Button homeButton;
-    private ArrayList<String> listSent = new ArrayList<String>();
-    private ArrayList<String> listRecv = new ArrayList<String>();
+    private ArrayList<String> listSent = new ArrayList<>();
+    private ArrayList<String> listRecv = new ArrayList<>();
     ArrayAdapter<String> adapterSent;
     ArrayAdapter<String> adapterRecv;
 

@@ -11,17 +11,20 @@
         android:layout_marginTop="16dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:hint="@string/partyName" />
+        android:hint="@string/partyName"
+        android:importantForAutofill="no"
+        android:inputType="textNoSuggestions" />
     <EditText
         android:id="@+id/editTextDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:inputType="date"
-        android:hint="@string/date" />
+        android:hint="@string/date"
+        android:importantForAutofill="no" />
     <EditText
         android:id="@+id/editTextTime"
         android:layout_width="match_parent"
@@ -32,5 +35,6 @@
         android:layout_marginBottom="16dp"
         android:fontFamily="sans-serif"
         android:inputType="time"
-        android:hint="@string/time"/>
+        android:hint="@string/time"
+        android:importantForAutofill="no" />
 </LinearLayout>
