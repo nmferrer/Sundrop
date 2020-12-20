@@ -230,8 +230,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                     //DATA ACCESS CANCELLED
                 }
             };
-            databaseRef.child("Users").child(currentUID).addValueEventListener(profileListener); //attaches listener to current user
-            mDatabaseRefValEventListenerMap.put(databaseRef.child("Users").child(currentUID), profileListener);
+            databaseRef.child("Users/" + currentUID).addValueEventListener(profileListener); //attaches listener to current user
+            mDatabaseRefValEventListenerMap.put(databaseRef.child("Users/" + currentUID), profileListener);
         }
 
         //QUERY ALL ONLINE USERS

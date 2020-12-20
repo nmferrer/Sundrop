@@ -66,7 +66,7 @@ public class HomeActivity extends AppCompatActivity {
         gamerButton = findViewById(R.id.gamerButton);
         signOutButton = findViewById(R.id.debugSignOutButton);
 
-        partySelectSpinner = (Spinner)findViewById(R.id.partySelectSpinner);
+        partySelectSpinner = findViewById(R.id.partySelectSpinner);
         partyConfirmButton = findViewById(R.id.partyConfirmButton);
         listPartyOptions = new ArrayList<>();
         partyOptionsFullKey = new HashMap<>();
@@ -105,7 +105,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (mAuth.getCurrentUser() != null) {
-                    Toast.makeText(HomeActivity.this, "DEBUG: User " + mAuth.getCurrentUser().getUid() + " signed out.",
+                    Toast.makeText(HomeActivity.this, "DEBUG: User signed out.",
                             Toast.LENGTH_SHORT).show();
                     mAuth.signOut();
                 } else {
@@ -116,6 +116,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
 
+        //TODO: BECAUSE I CLEAR AND REPOPULATE DURING onStart(), SPINNER WILL RESET. CAN I MAKE THIS PERSISTENT?
         //Adapter setup
         partyOptionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, listPartyOptions);
         partySelectSpinner.setAdapter(partyOptionsAdapter);
@@ -124,17 +125,30 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 ((TextView)adapterView.getChildAt(0)).setTextColor(Color.WHITE);
-                Toast.makeText(HomeActivity.this, "Item selected",
-                        Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                Toast.makeText(HomeActivity.this, "No item selected..",
-                        Toast.LENGTH_SHORT).show();
             }
         });
-        //TODO: CONFIRM PARTY (Pull key from hashmap and query)
+
+        partyConfirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (partySelectSpinner.getCount() == 0) {
+                    Toast.makeText(HomeActivity.this,
+                            "Currently not a member of any party.",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    String partyName = listPartyOptions.get(partySelectSpinner.getSelectedItemPosition());
+                    String partyKey = partyOptionsFullKey.get(partyName);
+
+                    //bundle key and launch partyFormedActivity
+                    Log.d(TAG, partyKey);
+                    launchPartyWithKey(partyKey);
+                }
+            }
+        });
 
 
     }
@@ -213,6 +227,15 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    private void launchPartyWithKey(String partyKey) {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "No user signed in.", Toast.LENGTH_SHORT);
+        } else {
+            Intent intent = new Intent(this, PartyFormedActivity.class);
+            intent.putExtra("partyID", partyKey);
+            startActivity(intent);
+        }
+    }
     private void animateBackground() {
         int colorFrom = getResources().getColor(R.color.homePink);
         int colorTo = getResources().getColor(R.color.homeBlue);

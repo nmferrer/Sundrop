@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -62,23 +63,27 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <EditText
                 android:id="@+id/editTextChatMessage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.5"
+                android:layout_weight="1.70"
                 android:hint="@string/chat_message"
                 android:importantForAutofill="no"
                 android:inputType="textNoSuggestions" />
 
-            <Button
-                android:id="@+id/sendMessageButton"
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/sendButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:text="@string/send" />
+                android:layout_weight="0.30"
+                android:clickable="true"
+                android:focusable="true"
+                app:backgroundTint="#FFFFFF"
+                app:srcCompat="@drawable/sundrop_button_test" />
 
         </LinearLayout>
 
