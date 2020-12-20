@@ -1,3 +1,10 @@
+/*
+ * Created by Noah Ferrer on 12/18/20 7:35 PM
+ * Copyright (c) 2020 . All rights reserved.
+ * Last modified 12/18/20 7:25 PM
+ *
+ */
+
 package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
@@ -44,10 +51,7 @@ import java.util.Map;
 
 //TODO: CALL TO USERINFO IS ASYNCHRONOUS, I.E. NOT GUARANTEED UNLESS ACTED IN LISTENER
 //TODO: SET DISPLAY NAME UPON ACCOUNT VERIFICATION?
-//TODO: NOTE THAT VALUE OF INVITATION IS DISPLAYNAME AT TIME OF SENDING
-//TODO: REDUNDANCY CHECK, i.e. reject action if invitation already
-
-//TODO: PROMPT TIME AND DATE WHEN SENDING INVITATION
+//TODO: NOTE THAT VALUE OF INVITATION IS DISPLAYNAME AT TIME OF SENDING, CONSIDER UPDATING DYNAMICALLY?
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
     //Firebase
@@ -78,7 +82,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private final String TAG = "SEEKING_USERS_DEBUG";
     private boolean debugFlagOnline = false;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,9 +106,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
         lv.setClickable(true);
 
-        //UI Setup: Date Time Picker
-        //https://stackoverflow.com/questions/2055509/how-to-create-a-date-and-time-picker-in-android/22626706#22626706
-        //TODO: EITHER HANDLE SCHEDULING THROUGH DIALOG POPUP OR BY NEW ACTIVITY
+
 
         //Listener Setup
         optInButton.setOnClickListener(new View.OnClickListener() {
@@ -114,7 +115,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 //ADD ENTRY TO DB
                 Log.d(TAG, "isOnlineStatus:"+ debugFlagOnline);
                 if (currentUser != null) {
-                    databaseRef.child("Registered Users")
+                    databaseRef.child("Users")
                             .child(currentUID)
                             .child("online")
                             .setValue(true);
@@ -138,7 +139,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.d(TAG, "signOutAttempt");
                 if (debugFlagOnline) {
-                    databaseRef.child("Registered Users").child(currentUser.getUid()).child("online").setValue(false);
+                    databaseRef.child("Users").child(currentUser.getUid()).child("online").setValue(false);
                     Log.d(TAG, "databaseSignOutSuccessful");
                     debugFlagOnline = false;
                 }
@@ -162,14 +163,13 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 final String pressedDisplayName = ((TextView) view).getText().toString();
 
                 Log.d(TAG, "queryDisplayNameToUserInfoAttempt:" + pressedDisplayName);
-                Query queryUID = databaseRef.child("Registered Users").orderByChild("displayName").equalTo(pressedDisplayName).limitToFirst(1);
+                Query queryUID = databaseRef.child("Users").orderByChild("displayName").equalTo(pressedDisplayName).limitToFirst(1);
                 ValueEventListener queryUIDListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         Log.d(TAG, "queryDisplayNameToUserInfoAttemptDataChange");
                         Log.d(TAG, "queryDisplayNameToUserInfoAttemptHasChildren " + snapshot.getChildrenCount());
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) { //should only yield one result
-
                             UserInfo qUserInfo = dataSnapshot.getValue(UserInfo.class);
                             Log.d(TAG, "accessQueriedUserAttempt");
                             Log.d(TAG, ""+ qUserInfo.toString());
@@ -178,22 +178,16 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                             Log.d(TAG, ""+ currentUserInfo.toString());
                             Log.d(TAG, "accessCurrentUserSuccess");
 
-                            DataSnapshot pressedUserReceivedInvites = dataSnapshot.child("receivedInviteFrom"); //IS THIS EFFICIENT? (Pulling snapshot on a snapshot)
-                            Log.d(TAG,"generateAlertDialogAttempt");
-
+                            DataSnapshot inviteExistsCheck = dataSnapshot.child("receivedInviteFrom");
                             if (currentUserInfo.getUID().equals(qUserInfo.getUID())) { //CHECK: USER PRESSED SELF
                                 Toast.makeText(ViewActiveUsersActivity.this,
                                         "Can't start a party by yourself!",
                                         Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "generateAlertDialogRefusal:Call on Self");
-
-                            } else if(pressedUserReceivedInvites.hasChild(currentUID)) { //CHECK: USER ALREADY SENT INVITE
-                                Log.d(TAG, "pressedUserAlreadyHasInviteFromCurrent");
+                            } else if (inviteExistsCheck.hasChild(currentUID)) {
                                 Toast.makeText(ViewActiveUsersActivity.this,
-                                        "Invite already sent! " + pressedUserReceivedInvites.child(currentUID).getValue(String.class),
+                                        "This user has not responded to your previous invitation.",
                                         Toast.LENGTH_SHORT).show();
-                                Log.d(TAG, "generateAlertDialogRefusal:Invite Already Exists");
-
                             } else {
                                 generateAlertDialogUserInfo(qUserInfo.toString(),
                                         currentUID, qUserInfo.getUID(),
@@ -201,7 +195,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                                         qUserInfo.getDisplayName());
                                 Log.d(TAG, "generateAlertDialogSuccess");
                             }
-
                         }
                     }
 
@@ -237,12 +230,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                     //DATA ACCESS CANCELLED
                 }
             };
-            databaseRef.child("Registered Users").child(currentUID).addValueEventListener(profileListener); //attaches listener to current user
-            mDatabaseRefValEventListenerMap.put(databaseRef.child("Registered Users").child(currentUID), profileListener);
+            databaseRef.child("Users").child(currentUID).addValueEventListener(profileListener); //attaches listener to current user
+            mDatabaseRefValEventListenerMap.put(databaseRef.child("Users").child(currentUID), profileListener);
         }
 
         //QUERY ALL ONLINE USERS
-        Query queryIsOnline = databaseRef.child("Registered Users").orderByChild("online").equalTo(true);
+        Query queryIsOnline = databaseRef.child("Users").orderByChild("online").equalTo(true);
         isOnlineListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -302,7 +295,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 generateAlertDialogConfirmInvitation(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
-                //TODO: NOTE THAT THIS WILL ALWAYS SET VALUE BUT WILL NOT PRODUCE REDUNDANT ENTRIES
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -323,7 +315,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         View dialogView = inflater.inflate(R.layout.date_time_dialog, null);
         builder.setView(dialogView);
 
-
+        final EditText editTextPartyName = dialogView.findViewById(R.id.editTextPartyName);
         final EditText editTextDate = dialogView.findViewById(R.id.editTextDate);
         final EditText editTextTime = dialogView.findViewById(R.id.editTextTime);
         SetDate dateInput = new SetDate(editTextDate, ViewActiveUsersActivity.this);
@@ -331,17 +323,18 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                //TAKE THE VALUES OF TIME AND CREATE INVITE STRING
-                //EditText editTextDate = new EditText(ViewActiveUsersActivity.this);
-                //EditText editTextTime = new EditText(ViewActiveUsersActivity.this);
 
+                String partyName = editTextPartyName.getText().toString();
                 String date = editTextDate.getText().toString();
                 String time = editTextTime.getText().toString();
+                Date timeLogged = Calendar.getInstance().getTime();
 
-                String sentInviteToInfo = recipientDisplayName + "_" + date + "_" + time;
-                String receivedInviteFromInfo = senderDisplayName + "_" + date + "_" + time;
-                databaseRef.child("Registered Users").child(senderUID).child("sentInviteTo").child(recipientUID).setValue(sentInviteToInfo);
-                databaseRef.child("Registered Users").child(recipientUID).child("receivedInviteFrom").child(senderUID).setValue(receivedInviteFromInfo);
+                //TODO: CURRENT SOLUTION: KEEP INVITE TABLE FOR EASY LOOKUP, AND ATTACH sendTo/receiveFrom RELATIONSHIP FOR EASE OF USE
+                //IS THIS EFFICIENT?
+                Invite newInvite = new Invite(partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date, timeLogged);
+                databaseRef.child("Invites").child(newInvite.getSender_recipient()).setValue(newInvite);
+                databaseRef.child("Users").child(senderUID).child("sentInviteTo").child(recipientUID).setValue(true);
+                databaseRef.child("Users").child(recipientUID).child("receivedInviteFrom").child(senderUID).setValue(true);
 
                 Toast.makeText(ViewActiveUsersActivity.this,
                         "Invitation Sent!",

@@ -87,7 +87,7 @@ public class LoginActivity extends AppCompatActivity {
                             UserInfo userInfo = new UserInfo(UID, email, trimEmail(email));
                             Log.d(TAG, "userInfoCreated:success");
 
-                            databaseRef.child("Registered Users").child(UID).setValue(userInfo);
+                            databaseRef.child("Users").child(UID).setValue(userInfo);
                             Log.d(TAG, "databasePushUser:success");
 
                             launchUserSeek(); //DO NOT LAUNCH IF CREATION FAILS

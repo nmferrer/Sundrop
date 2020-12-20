@@ -1,11 +1,16 @@
+/*
+ * Created by Noah Ferrer on 12/18/20 7:35 PM
+ * Copyright (c) 2020 . All rights reserved.
+ * Last modified 12/18/20 6:29 AM
+ *
+ */
+
 package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,9 +18,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,14 +61,6 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText editTextSeeking;
     private Button buttonConfirm;
     private Button buttonCancel;
-
-    private CheckBox checkBoxSunday;
-    private CheckBox checkBoxMonday;
-    private CheckBox checkBoxTuesday;
-    private CheckBox checkBoxWednesday;
-    private CheckBox checkBoxThursday;
-    private CheckBox checkBoxFriday;
-    private CheckBox checkBoxSaturday;
 
     private EditText editTextSundayStart;
     private EditText editTextMondayStart;
@@ -175,7 +170,7 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             //TODO: ENSURE THIS DOES NOT OVERWRITE ADDITIONAL ENTRIES
-                            DatabaseReference updatedProfile = databaseRef.child("Registered Users").child(UID);
+                            DatabaseReference updatedProfile = databaseRef.child("Users").child(UID);
                             updatedProfile.child("displayName").setValue(updateDisplayName);
                             updatedProfile.child("email").setValue(updateEmail);
                             updatedProfile.child("seeking").setValue(updateSeeking);
@@ -223,7 +218,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (firebaseUser != null) {
             String UID = currentUser.getUid();
 
-            //WRITES TO REGISTERED USERS
+            //WRITES TO USERS
             ValueEventListener profileListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -261,8 +256,8 @@ public class SettingsActivity extends AppCompatActivity {
                     //DATA ACCESS CANCELLED
                 }
             };
-            databaseRef.child("Registered Users").child(UID).addValueEventListener(profileListener);
-            mValueEventListenerMap.put(databaseRef.child("Registered Users").child(UID), profileListener);
+            databaseRef.child("Users").child(UID).addValueEventListener(profileListener);
+            mValueEventListenerMap.put(databaseRef.child("Users").child(UID), profileListener);
         }
     }
 
