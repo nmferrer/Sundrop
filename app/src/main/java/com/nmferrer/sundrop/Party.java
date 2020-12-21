@@ -6,17 +6,21 @@
  */
 
 package com.nmferrer.sundrop;
-
+//TODO: SIGNIFY A "HOST" MEMBER (USER THAT CREATED PARTY)
 public class Party {
     private String partyName;
-    private String timeAndDate;
+    private String time;
+    private String date;
+
+    //STORE INFORMATION TO AID CREATION OF NEW INVITES
 
     public Party() {
     }
 
-    public Party(String partyName, String timeAndDate) {
+    public Party(String partyName, String time, String date) {
         this.partyName = partyName;
-        this.timeAndDate = timeAndDate;
+        this.time = time;
+        this.date = date;
     }
 
     public String getPartyName() {
@@ -27,11 +31,19 @@ public class Party {
         this.partyName = partyName;
     }
 
-    public String getTimeAndDate() {
-        return timeAndDate;
+    public String getTime() {
+        return time;
     }
 
-    public void setTimeAndDate(String timeAndDate) {
-        this.timeAndDate = timeAndDate;
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

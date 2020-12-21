@@ -7,9 +7,11 @@
 
 package com.nmferrer.sundrop;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class Invite {
+    private String partyUID;
     private String partyName;
     private String senderUID;
     private String senderDisplayName;
@@ -24,7 +26,8 @@ public class Invite {
     public Invite() {
     }
 
-    public Invite(String partyName, String senderUID, String senderDisplayName, String recipientUID, String recipientDisplayName, String time, String date, Date timeLogged) {
+    public Invite(String partyUID, String partyName, String senderUID, String senderDisplayName, String recipientUID, String recipientDisplayName, String time, String date) {
+        this.partyUID = partyUID;
         this.partyName = partyName;
         this.senderUID = senderUID;
         this.senderDisplayName = senderDisplayName;
@@ -32,8 +35,16 @@ public class Invite {
         this.recipientDisplayName = recipientDisplayName;
         this.time = time;
         this.date = date;
-        this.timeLogged = timeLogged;
-        this.sender_recipient = senderDisplayName + "_" + recipientDisplayName;
+        this.timeLogged = Calendar.getInstance().getTime();
+        this.sender_recipient = senderUID + "_" + recipientUID;
+    }
+
+    public String getPartyUID() {
+        return partyUID;
+    }
+
+    public void setPartyUID(String partyUID) {
+        this.partyUID = partyUID;
     }
 
     public String getPartyName() {
@@ -110,6 +121,6 @@ public class Invite {
 
     @Override
     public String toString() {
-        return String.format("%s -> %s\n %s\n%s %s\nLogged %s", senderDisplayName, recipientDisplayName, partyName, date, time, timeLogged.toString());
+        return String.format("%s -> %s\n%s\n%s %s\nLogged %s", senderDisplayName, recipientDisplayName, partyName, date, time, timeLogged.toString());
     }
 }

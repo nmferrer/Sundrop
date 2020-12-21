@@ -11,25 +11,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
-import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,13 +40,12 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO: CALL TO USERINFO IS ASYNCHRONOUS, I.E. NOT GUARANTEED UNLESS ACTED IN LISTENER
 //TODO: SET DISPLAY NAME UPON ACCOUNT VERIFICATION?
 //TODO: NOTE THAT VALUE OF INVITATION IS DISPLAYNAME AT TIME OF SENDING, CONSIDER UPDATING DYNAMICALLY?
+//TODO: USE FIREBASE UI TO FILL ENTRIES INSTEAD
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
     //Firebase
@@ -82,21 +76,59 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private final String TAG = "SEEKING_USERS_DEBUG";
     private boolean debugFlagOnline = false;
 
+    //Bundle
+    private HashMap<String, String> partyNameToLookupKey;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_active_users_relative);
 
+        //generate nameToLookupKey Hash Map
+        partyNameToLookupKey = new HashMap<>();
+        if (getIntent().getExtras() != null) {
+            Log.d(TAG, "bundlePassedToActivity:true");
+            ArrayList<String> partyNames = getIntent().getStringArrayListExtra("partyNames");
+            Log.d(TAG, "bundlePassedToActivity:partyNames");
+            ArrayList<String> lookupKeys = getIntent().getStringArrayListExtra("partyLookupKeys");
+            Log.d(TAG, "bundlePassedToActivity:partyLookupKeys");
+
+            for (int i = 0; i < partyNames.size(); i++) {
+                partyNameToLookupKey.put(partyNames.get(i), lookupKeys.get(i));
+                Log.d(TAG, "addingPair:" + partyNames.get(i) + ":" + lookupKeys.get(i));
+            }
+        } else {
+            Log.d(TAG, "bundlePassedToActivity:false");
+        }
         //Firebase Setup
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         currentUID = currentUser.getUid();
         databaseRef = FirebaseDatabase.getInstance().getReference();
 
-        //Listener Setup
+        //Hash Map Setup
         mDatabaseRefValEventListenerMap = new HashMap<>();
         mQueryChildListenerMap = new HashMap<>();
         mQueryValListenerMap = new HashMap<>();
+
+        //QUERY CURRENT USER'S PROFILE
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            currentUID = currentUser.getUid();
+            profileListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    Log.d(TAG, "queryCurrentUserProfileValueSet");
+                    currentUserInfo = snapshot.getValue(UserInfo.class);
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    //DATA ACCESS CANCELLED
+                }
+            };
+            databaseRef.child("Users/" + currentUID).addValueEventListener(profileListener); //attaches listener to current user
+            mDatabaseRefValEventListenerMap.put(databaseRef.child("Users/" + currentUID), profileListener);
+        }
 
         //UI Setup
         lv = findViewById(R.id.userDynamicList);
@@ -151,8 +183,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         });
 
         //Adapter setup
-        adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1,
+        adapter = new ArrayAdapter<>(this,
+                R.layout.list_white_text,
                 listItems);
         lv.setAdapter(adapter);
 
@@ -178,16 +210,16 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                             Log.d(TAG, ""+ currentUserInfo.toString());
                             Log.d(TAG, "accessCurrentUserSuccess");
 
-                            DataSnapshot inviteExistsCheck = dataSnapshot.child("receivedInviteFrom");
+                            //TODO: IMPLEMENT LOGIC CHECKS
+                            //1) Already awaiting invite from you.
+                            //2) Already in party with user.
+                            //TODO: IMPLEMENT LOGIC CHECKS
+                            DataSnapshot inviteExistsCheck = dataSnapshot.child("receivedInvitesFrom");
                             if (currentUserInfo.getUID().equals(qUserInfo.getUID())) { //CHECK: USER PRESSED SELF
                                 Toast.makeText(ViewActiveUsersActivity.this,
                                         "Can't start a party by yourself!",
                                         Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "generateAlertDialogRefusal:Call on Self");
-                            } else if (inviteExistsCheck.hasChild(currentUID)) {
-                                Toast.makeText(ViewActiveUsersActivity.this,
-                                        "This user has not responded to your previous invitation.",
-                                        Toast.LENGTH_SHORT).show();
                             } else {
                                 generateAlertDialogUserInfo(qUserInfo.toString(),
                                         currentUID, qUserInfo.getUID(),
@@ -214,6 +246,20 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         listItems.clear(); //listItems must update on activity start
+        partyNameToLookupKey.clear(); //wipe clear to overwrite + leftover data may cause issues if new user signs in
+
+        //generate nameToLookupKey Hash Map
+        if (getIntent().getExtras() != null) {
+            Log.d(TAG, "bundlePassedToActivity:true");
+            ArrayList<String> partyNames = getIntent().getStringArrayListExtra("partyNames");
+            ArrayList<String> lookupKeys = getIntent().getStringArrayListExtra("partyLookupKeys");
+            for (int i = 0; i < partyNames.size(); i++) {
+                partyNameToLookupKey.put(partyNames.get(i), lookupKeys.get(i));
+                Log.d(TAG, "addingPair:" + partyNames.get(i) + ":" + lookupKeys.get(i));
+            }
+        } else {
+            Log.d(TAG, "bundlePassedToActivity:false");
+        }
 
         //QUERY CURRENT USER'S PROFILE
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
@@ -291,13 +337,21 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                                              final String recipientDisplayName) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ViewActiveUsersActivity.this);
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
+        builder.setPositiveButton(R.string.newParty, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                generateAlertDialogConfirmInvitation(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
+                Toast.makeText(ViewActiveUsersActivity.this, "Creating new party.", Toast.LENGTH_SHORT).show();
+                generateAlertDialogNewPartyCreation(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
             }
         });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.existingParty, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(ViewActiveUsersActivity.this, "Selecting existing party.", Toast.LENGTH_SHORT).show();
+                generateAlertDialogExistingPartyInvite(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
+            }
+        });
+        builder.setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) { //Alert Dialog Denied
             }
@@ -309,7 +363,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void generateAlertDialogConfirmInvitation(final String senderUID, final String recipientUID, final String senderDisplayName, final String recipientDisplayName) {
+    private void generateAlertDialogNewPartyCreation(final String senderUID, final String recipientUID, final String senderDisplayName, final String recipientDisplayName) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ViewActiveUsersActivity.this);
         LayoutInflater inflater = getLayoutInflater().from(ViewActiveUsersActivity.this);
         View dialogView = inflater.inflate(R.layout.date_time_dialog, null);
@@ -327,14 +381,16 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 String partyName = editTextPartyName.getText().toString();
                 String date = editTextDate.getText().toString();
                 String time = editTextTime.getText().toString();
-                Date timeLogged = Calendar.getInstance().getTime();
 
                 //TODO: CURRENT SOLUTION: KEEP INVITE TABLE FOR EASY LOOKUP, AND ATTACH sendTo/receiveFrom RELATIONSHIP FOR EASE OF USE
                 //IS THIS EFFICIENT?
-                Invite newInvite = new Invite(partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date, timeLogged);
-                databaseRef.child("Invites").child(newInvite.getSender_recipient()).setValue(newInvite);
-                databaseRef.child("Users").child(senderUID).child("sentInviteTo").child(recipientUID).setValue(true);
-                databaseRef.child("Users").child(recipientUID).child("receivedInviteFrom").child(senderUID).setValue(true);
+                String inviteUID = partyName + "_" + senderUID +"_" + recipientUID; //allows for duplicate party names to exist and users can send invites to the same user for different parties
+                String partyUID = senderUID +"_" + partyName; //identifies creator of party as host
+                Invite newInvite = new Invite(partyUID, partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date);
+                databaseRef.child("Invites").child(inviteUID).setValue(newInvite);
+                //RESOLVED: MODIFY SENT/RECEIVED KEYS TO ALLOW USERS TO SEND MULTIPLE INVITES IF PARTY IS DIFFERENT
+                databaseRef.child("Users").child(senderUID).child("sentInviteTo").child(partyName).setValue(recipientUID);
+                databaseRef.child("Users").child(recipientUID).child("receivedInviteFrom").child(partyName).setValue(senderUID);
 
                 Toast.makeText(ViewActiveUsersActivity.this,
                         "Invitation Sent!",
@@ -351,6 +407,70 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+    private void generateAlertDialogExistingPartyInvite(final String senderUID, final String recipientUID, final String senderDisplayName, final String recipientDisplayName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ViewActiveUsersActivity.this);
+        LayoutInflater inflater = getLayoutInflater().from(ViewActiveUsersActivity.this);
+        View dialogView = inflater.inflate(R.layout.party_select_spinner_dialog, null);
+        builder.setView(dialogView);
+
+        final ArrayList<String> listPartyOptions = new ArrayList<>();
+        for (Map.Entry<String, String> entry : partyNameToLookupKey.entrySet()) {
+            Log.d(TAG, "partyFound:" + entry.getKey());
+            listPartyOptions.add(entry.getKey());
+        }
+        //VALUE IS PASSED FROM HOME TO THIS ACTIVITY ON CREATION
+
+        //Spinner Dialog Setup
+        final Spinner partySelectSpinner = dialogView.findViewById(R.id.partySelectSpinnerDialog);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, listPartyOptions);
+        partySelectSpinner.setAdapter(arrayAdapter);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        partySelectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG, "itemSelected"+ adapterView.getChildAt(0));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        if (listPartyOptions.isEmpty()) {
+            Toast.makeText(ViewActiveUsersActivity.this, "Not currently in any parties.", Toast.LENGTH_SHORT).show();
+        } else {
+            builder.setView(dialogView);
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //GIVEN PARTY NAME, GENERATE INVITE
+                    final String partyName = listPartyOptions.get(partySelectSpinner.getSelectedItemPosition());
+                    Toast.makeText(ViewActiveUsersActivity.this,
+                            partyName,
+                            Toast.LENGTH_SHORT).show();
+                    final String partyUID = partyNameToLookupKey.get(partyName);
+                    final String party_sender_recipient = partyName + "_" + senderUID + "_" + recipientUID;
+                    databaseRef.child("Parties/" + partyUID).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            Party queriedParty = snapshot.getValue(Party.class);
+                            Invite existingPartyInvite = new Invite(partyUID, partyName, currentUser.getUid(), currentUser.getDisplayName(), recipientUID, recipientDisplayName, queriedParty.getTime(), queriedParty.getDate());
+                            databaseRef.child("Invites/" + party_sender_recipient).setValue(existingPartyInvite);
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+
+                }
+            });
+        }
+        builder.setTitle("Select a party to invite user to:");
+        AlertDialog dialog = builder.create();
+        dialog.show();    }
     @Override
     protected void onStop() {
         super.onStop();

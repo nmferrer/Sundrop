@@ -5,13 +5,14 @@
     android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_gray">
+    android:background="@drawable/gradient_animation">
 
     <TextView
         android:id="@+id/Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="132dp"
+        android:layout_marginTop="142dp"
+        android:fontFamily="sans-serif-light"
         android:text="@string/sundrop"
         android:textColor="@color/colorPrimary"
         android:textSize="50sp"
@@ -21,7 +22,7 @@
 
 
     <RelativeLayout
-        android:id="@+id/relativeLayoutNavigation"
+        android:id="@+id/relativeLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -29,58 +30,76 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-
         <Button
             android:id="@+id/onlineButton"
-            android:layout_width="match_parent"
+            android:layout_width="411dp"
             android:layout_height="wrap_content"
             android:layout_above="@id/profileButton"
-            android:text="@string/party_finder" />
-
-        <Button
-            android:id="@+id/profileButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/partySelect"
-            android:text="@string/profile" />
-
+            android:text="@string/party_finder"
+            android:background="@drawable/button_border_transparent"
+            android:fontFamily="sans-serif-light"
+            android:textColor="@color/colorPrimary" />
 
         <LinearLayout
-            android:id="@+id/partySelect"
+            android:id="@+id/selectPartyBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@id/homeButtonBar"
+            android:layout_above="@id/onlineButton"
             android:orientation="horizontal"
             android:weightSum="1">
 
-            <Spinner
-                android:backgroundTint="@color/colorPrimary"
+            <Spinner style="@style/App_EditTextStyle"
                 android:id="@+id/partySelectSpinner"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.75" />
+                android:layout_weight="0.75"
+                android:backgroundTint="@color/colorPrimary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <Button
                 android:id="@+id/partyConfirmButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.25"
-                android:text="@string/parties" />
+                android:background="@drawable/button_border_transparent"
+                android:fontFamily="sans-serif-light"
+                android:text="@string/parties"
+                android:textColor="@color/colorPrimary"
+                tools:layout_editor_absoluteX="312dp"
+                tools:layout_editor_absoluteY="615dp" />
+
         </LinearLayout>
 
+        <Button
+            android:id="@+id/profileButton"
+            android:layout_width="411dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/bottomBar"
+            android:background="@drawable/button_border_transparent"
+            android:fontFamily="sans-serif-light"
+            android:text="@string/profile"
+            android:textColor="@color/colorPrimary"
+            tools:layout_editor_absoluteX="9dp"
+            tools:layout_editor_absoluteY="563dp" />
+
         <LinearLayout
-            android:id="@+id/homeButtonBar"
+            android:id="@+id/bottomBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
-            android:orientation="horizontal"
-            android:weightSum="3">
+            android:layout_marginEnd="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/invitationsButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/invitations" />
 
@@ -96,10 +115,12 @@
                 android:id="@+id/debugSignOutButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/sign_out" />
+
         </LinearLayout>
+
     </RelativeLayout>
 
 

@@ -1,0 +1,8 @@
+ViewActiveUsersActivity: Implement stricter logic checks
+    Notify user if recipient already has invite received by user
+    Notify user if recipient is already in a party with them
+    Notify user if recipient has already received an invitation for the party user is trying to make.
+
+Login: Require email verification.
+
+Layouts: Make EditText and Button properties style objects

@@ -1,0 +1,16 @@
+<?xml version ="1.0" encoding ="utf-8"?>
+<!-- gradient tutorial
+https://medium.com/@joonasm.kauppinen/animated-gradient-background-on-android-part-1-2-82f378257610
+-->
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:duration="3000"
+        android:drawable="@drawable/gradient_start"/>
+
+    <item android:duration="3000"
+        android:drawable="@drawable/gradient_center"/>
+
+    <item android:duration="3000"
+        android:drawable="@drawable/gradient_end"/>
+
+</animation-list>

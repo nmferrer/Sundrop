@@ -62,6 +62,7 @@ public class ViewInvitations extends AppCompatActivity {
     private HashMap<DatabaseReference, ValueEventListener> mDatabaseRefValEventListenerMap;
     private HashMap<DatabaseReference, ChildEventListener> mDatabaseRefChildEventListenerMap;
 
+    private HashMap<String, String> displayNameUIDMap;
     //Debug
     private final String TAG = "VIEW_INVITATIONS_DEBUG";
 
@@ -81,6 +82,8 @@ public class ViewInvitations extends AppCompatActivity {
         mDatabaseRefValEventListenerMap = new HashMap<>();
         mDatabaseRefChildEventListenerMap = new HashMap<>();
 
+        displayNameUIDMap = new HashMap<>();
+
         //UI Setup
         lvSent = findViewById(R.id.listViewSent);
         lvRecv = findViewById(R.id.listViewReceived);
@@ -97,12 +100,12 @@ public class ViewInvitations extends AppCompatActivity {
 
         //Adapter setup
         adapterSent = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1,
+                R.layout.list_white_text,
                 listSent);
         lvSent.setAdapter(adapterSent);
 
         adapterRecv = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1,
+                R.layout.list_white_text,
                 listRecv);
         lvRecv.setAdapter(adapterRecv);
     }
@@ -110,9 +113,11 @@ public class ViewInvitations extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        currentUID = mAuth.getCurrentUser().getUid();
         Log.d(TAG, "UID:" + currentUID);
         listSent.clear(); //listSent must update on activity start
         listRecv.clear(); //listRecv must update on activity start
+        displayNameUIDMap = new HashMap<>();
 
         Query sentInvitesQuery =
                 databaseRef.child("Invites").orderByChild("senderUID").equalTo(currentUID);
@@ -146,6 +151,7 @@ public class ViewInvitations extends AppCompatActivity {
                 for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
                     Invite invite = dataSnapshot.getValue(Invite.class);
                     listRecv.add(invite.toString());
+                    displayNameUIDMap.put(invite.getSenderDisplayName(), invite.getSenderUID());
                     adapterRecv.notifyDataSetChanged();
                 }
             }
@@ -167,23 +173,30 @@ public class ViewInvitations extends AppCompatActivity {
                 Log.d(TAG, "clickedListView:\n" + pressedInvite);
                 //do a little string parsing
                 String[] sender_recipient_arr = pressedInvite.split("\\s+");
-                String sender_recipient_key = sender_recipient_arr[0] + "_" + sender_recipient_arr[2];
-                Log.d(TAG, "clickedInvite:" + sender_recipient_key);
+                String senderDisplayName = sender_recipient_arr[0];
+                String senderUID = displayNameUIDMap.get(senderDisplayName);
+                String partyName = sender_recipient_arr[3];
+                Log.d(TAG, "clickedInviteFrom:" + senderDisplayName);
 
-                //Access based on sender_recipient
-                DatabaseReference receivedInviteRef = databaseRef.child("Invites").child(sender_recipient_key);
+                final String inviteKey = partyName + "_" + senderUID + "_" + currentUID;
+                Log.d(TAG, "generatingKey:" + inviteKey);
+
+                //ON RECEIVED LIST FILLS, MAP SENDER DISPLAY NAME TO UID FOR EASY AND EFFICIENT LOOKUP
+
+                DatabaseReference receivedInviteRef = databaseRef.child("Invites/" + inviteKey);
+                Log.d(TAG, "refAccessSuccess:" + inviteKey);
                 receivedInviteRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        /*(final String timeAndDate,
-                        final String senderUID, final String recipientUID,
-                        final String senderDisplayName, final String recipientDisplayName)*/
+                        Log.d(TAG, "refHasChildren:" + snapshot.hasChildren());
                         Invite queriedInvite = snapshot.getValue(Invite.class);
-                        String timeAndDate = String.format("%s %s", queriedInvite.getTime(), queriedInvite.getDate());
+                        Log.d(TAG, "refAccessToString:" + queriedInvite.toString());
+                        String party_sender_recipient = queriedInvite.getPartyName() + "_" + queriedInvite.getSender_recipient();
                         generateAlertDialogPartyCreation(
-                                timeAndDate,
+                                queriedInvite.getTime(), queriedInvite.getDate(),
                                 queriedInvite.getSenderUID(), queriedInvite.getRecipientUID(),
-                                queriedInvite.getSenderDisplayName(), queriedInvite.getRecipientDisplayName());
+                                queriedInvite.getSenderDisplayName(), queriedInvite.getRecipientDisplayName(),
+                                party_sender_recipient);
                     }
 
                     @Override
@@ -226,28 +239,29 @@ public class ViewInvitations extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void generateAlertDialogPartyCreation(final String timeAndDate,
+    private void generateAlertDialogPartyCreation(final String time, final String date,
                                                   final String senderUID, final String recipientUID,
-                                                  final String senderDisplayName, final String recipientDisplayName) {
+                                                  final String senderDisplayName, final String recipientDisplayName,
+                                                  final String party_sender_recipient) {
+
+        Log.d(TAG, time + "\n" + date + "\n" + senderUID + "\n" + recipientUID + "\n" + senderDisplayName + "\n" + recipientDisplayName);
         AlertDialog.Builder builder = new AlertDialog.Builder(ViewInvitations.this);
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Delete invitation and create party entry
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
 
+                String partyName = party_sender_recipient.split("_")[0]; //[1] and [2] are sender and recipient
+
                 //delete invitation
                 final DatabaseReference senderRef = databaseRef.child("Users").child(senderUID);
-                senderRef.child("sentInviteTo").child(recipientUID).removeValue();
-
-
+                senderRef.child("sentInviteTo").child(partyName).removeValue();
 
                 final DatabaseReference recipientRef = databaseRef.child("Users").child(recipientUID);
-                recipientRef.child("receivedInviteFrom").child(senderUID).removeValue();
-
-                String sender_recipient = senderDisplayName + "_" + recipientDisplayName;
+                recipientRef.child("receivedInviteFrom").child(partyName).removeValue();
 
                 //notify adapter
-                DatabaseReference queriedInvite = databaseRef.child("Invites").child(sender_recipient);
+                DatabaseReference queriedInvite = databaseRef.child("Invites/" + party_sender_recipient);
                 ValueEventListener queriedInviteListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -258,10 +272,9 @@ public class ViewInvitations extends AppCompatActivity {
                         String partyName = inviteInfo.getPartyName();
                         String senderUID = inviteInfo.getSenderUID();
                         String partyUID  = partyName + "_" + senderUID;
-                        //TODO: NOTE THAT THIS ASSUMES SENDER IS HOST, WILL BREAK IF NON-HOST INVITES ANOTHER USER
 
                         //create party entry
-                        Party newParty = new Party(inviteInfo.getPartyName(), timeAndDate);
+                        Party newParty = new Party(inviteInfo.getPartyName(), time, date);
                         DatabaseReference newPartyRef = databaseRef.child("Parties").child(partyUID);
                         newPartyRef.setValue(newParty);
                         newPartyRef.child("members").child(senderUID).setValue(true);
@@ -281,7 +294,7 @@ public class ViewInvitations extends AppCompatActivity {
                     }
                 };
                 queriedInvite.addListenerForSingleValueEvent(queriedInviteListener);
-                databaseRef.child("Invites").child(sender_recipient).removeValue(); //REMOVE INVITE toString FROM listRecv
+                databaseRef.child("Invites").child(party_sender_recipient).removeValue(); //REMOVE INVITE toString FROM listRecv
 
                 //notify party creation
                 Toast.makeText(ViewInvitations.this,
@@ -289,7 +302,7 @@ public class ViewInvitations extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) { //Delete invitation only
                 DatabaseReference senderRef = databaseRef.child("Users").child(senderUID);
@@ -303,7 +316,7 @@ public class ViewInvitations extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
-
+        String timeAndDate = String.format("%s %s", time, date);
         builder.setMessage("Invitation received for party at: " + timeAndDate)
                 .setTitle("Form Party?");
         AlertDialog dialog = builder.create();

@@ -10,7 +10,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_animation">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -24,7 +25,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/active_users"
-            android:textSize="36sp" />
+            android:textSize="36sp"
+            style="@style/App_EditTextStyle"/>
 
         <ListView
             android:id="@+id/userDynamicList"
@@ -51,24 +53,21 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/opt_in"
-                android:textColor="@color/black" />
+                android:text="@string/opt_in" />
             <Button
                 android:id="@+id/home"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/home"
-                android:textColor="@color/black" />
+                android:text="@string/home" />
             <Button
                 android:id="@+id/signOut"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:text="@string/sign_out"
-                android:textColor="@color/black" />
+                android:text="@string/sign_out" />
         </LinearLayout>
 
 

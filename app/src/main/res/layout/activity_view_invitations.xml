@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ViewInvitations">
+    tools:context=".ViewInvitations"
+    android:background="@drawable/gradient_animation">
 
     <LinearLayout
         android:id="@+id/linearLayoutInvitations"
@@ -22,7 +23,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <TextView style = "@style/App_EditTextStyle"
             android:id="@+id/textViewSent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +36,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1" />
 
-        <TextView
+        <TextView style = "@style/App_EditTextStyle"
             android:id="@+id/textViewReceived"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -49,6 +50,9 @@
             android:layout_weight="1" />
 
         <Button
+            android:background="@drawable/button_border_transparent"
+            android:fontFamily="sans-serif-light"
+            android:textColor="@color/colorPrimary"
             android:id="@+id/homeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

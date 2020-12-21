@@ -2,8 +2,10 @@ package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -32,12 +34,25 @@ public class LoginActivity extends AppCompatActivity {
     private Button createAccountButton;
     private Button signInButton;
 
+    private ConstraintLayout constraintLayout;
+    private AnimationDrawable animationDrawable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        constraintLayout = (ConstraintLayout) findViewById(R.id.loginConstraintLayout);
+        animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
+        animationDrawable.setEnterFadeDuration(3000);
+        animationDrawable.setExitFadeDuration(2000);
+
         mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() != null) {
+            launchHome();
+        }
+
         currentUser = mAuth.getCurrentUser();
         databaseRef = FirebaseDatabase.getInstance().getReference();
 
@@ -65,7 +80,9 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        currentUser = mAuth.getCurrentUser();
+        if (mAuth.getCurrentUser() != null) {
+            launchHome();
+        }
     }
 
     //ACCOUNT HANDLING
@@ -90,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
                             databaseRef.child("Users").child(UID).setValue(userInfo);
                             Log.d(TAG, "databasePushUser:success");
 
-                            launchUserSeek(); //DO NOT LAUNCH IF CREATION FAILS
+                            launchHome(); //DO NOT LAUNCH IF CREATION FAILS
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -115,7 +132,7 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this, "Sign-in successful.",
                                     Toast.LENGTH_SHORT).show();
                             FirebaseUser user = mAuth.getCurrentUser();
-                            launchUserSeek(); //DO NOT LAUNCH IF SIGN IN FAILS
+                            launchHome(); //DO NOT LAUNCH IF SIGN IN FAILS
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",

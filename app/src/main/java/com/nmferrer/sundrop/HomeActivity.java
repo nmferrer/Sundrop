@@ -29,6 +29,8 @@ import com.nmferrer.sundrop.experiments.RadialMenu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
     //Firebase
@@ -54,7 +56,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_home_revised);
 
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
@@ -108,6 +110,7 @@ public class HomeActivity extends AppCompatActivity {
                     Toast.makeText(HomeActivity.this, "DEBUG: User signed out.",
                             Toast.LENGTH_SHORT).show();
                     mAuth.signOut();
+                    launchLogin();
                 } else {
                     Toast.makeText(HomeActivity.this, "DEBUG: No user logged in.",
                             Toast.LENGTH_SHORT).show();
@@ -122,6 +125,7 @@ public class HomeActivity extends AppCompatActivity {
         partySelectSpinner.setAdapter(partyOptionsAdapter);
         partyOptionsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         partySelectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            //TODO: TEXT RETURNS TO BLACK WHEN PRESSING BACK. CHANGE AT XML?
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 ((TextView)adapterView.getChildAt(0)).setTextColor(Color.WHITE);
@@ -129,6 +133,7 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
+                ((TextView)adapterView.getChildAt(0)).setTextColor(Color.WHITE);
             }
         });
 
@@ -194,47 +199,44 @@ public class HomeActivity extends AppCompatActivity {
         Intent intent = new Intent(this, RadialMenu.class);
         startActivity(intent);
     }
+
+    private void launchLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
     private void launchSettings() {
-        if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(HomeActivity.this, "No user logged in.",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
     private void launchOnline() {
-        if (mAuth.getCurrentUser() == null) {
-            Log.d(TAG, "No user signed in. Launching login.");
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-        } else {
-            Log.d(TAG, "User signed in. Launching party search.");
-            Log.d(TAG, "Email: " + mAuth.getCurrentUser().getEmail());
-            Intent intent = new Intent(this, ViewActiveUsersActivity.class);
-            startActivity(intent);
+        Log.d(TAG, "User signed in. Launching party search.");
+        Log.d(TAG, "Email: " + mAuth.getCurrentUser().getEmail());
+        Intent intent = new Intent(this, ViewActiveUsersActivity.class);
+        //BUNDLE DOES NOT SUPPORT HASH MAPS? WORKAROUND:
+        //ITERATE THROUGH NAME_KEY HASH MAP AND FILL PARTY NAMES DURING onCreate AND onStart
+        ArrayList<String> partyNames = new ArrayList<>();
+        ArrayList<String> lookupKeys = new ArrayList<>();
+        for (Map.Entry<String, String> nameToFullKey : partyOptionsFullKey.entrySet()) {
+            String partyName = nameToFullKey.getKey();
+            String fullKey = nameToFullKey.getValue();
+            partyNames.add(partyName);
+            lookupKeys.add(fullKey);
         }
+        intent.putExtra("partyNames", partyNames);
+        intent.putExtra("partyLookupKeys", lookupKeys);
+        startActivity(intent);
     }
 
     private void launchInvitations() {
-        if (mAuth.getCurrentUser() == null) {
-            Log.d(TAG, "No user signed in. Launching login.");
-
-        } else {
-            Log.d(TAG, "User signed in. Launching invitations.");
-            Intent intent = new Intent(this, ViewInvitations.class);
-            startActivity(intent);
-        }
+        Log.d(TAG, "User signed in. Launching invitations.");
+        Intent intent = new Intent(this, ViewInvitations.class);
+        startActivity(intent);
     }
 
     private void launchPartyWithKey(String partyKey) {
-        if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "No user signed in.", Toast.LENGTH_SHORT);
-        } else {
-            Intent intent = new Intent(this, PartyFormedActivity.class);
-            intent.putExtra("partyID", partyKey);
-            startActivity(intent);
-        }
+        Intent intent = new Intent(this, PartyFormedActivity.class);
+        intent.putExtra("partyID", partyKey);
+        startActivity(intent);
     }
     private void animateBackground() {
         int colorFrom = getResources().getColor(R.color.homePink);

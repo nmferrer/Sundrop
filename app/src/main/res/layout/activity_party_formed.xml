@@ -1,93 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".PartyFormedActivity">
 
-
-    <LinearLayout
+    <TextView android:layout_alignParentTop="true"
+        android:id="@+id/textViewPartyTitle"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:weightSum="4"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:text="@string/placeHolderTitle"
+        android:textSize="40sp" />
 
-        <TextView
-            android:id="@+id/textViewPartyTitle"
-            android:layout_width="match_parent"
+    <LinearLayout android:layout_below="@id/textViewPartyTitle"
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/seeUsersButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/placeHolderTitle"
-            android:textSize="40sp" />
+            android:layout_weight="1"
+            android:text="@string/see_users"
+            android:textColor="@color/black" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/inviteMembersButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:text="@string/invite_users"
+            android:textColor="@color/black" />
 
-            <Button style="?android:attr/buttonBarButtonStyle"
-                android:id="@+id/seeUsersButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/see_users"
-                android:textColor="@color/black"/>
-
-            <Button style="?android:attr/buttonBarButtonStyle"
-                android:id="@+id/inviteMembersButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/invite_users"
-                android:textColor="@color/black"/>
-
-            <Button style="?android:attr/buttonBarButtonStyle"
-                android:id="@+id/leavePartyButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/leave_party"
-                android:textColor="@color/black"/>
-
-        </LinearLayout>
-
-        <!-- CHAT LOG START -->
-        <ListView
-            android:id="@+id/listViewChatLog"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="4"/>
-        <!-- CHAT LOG END -->
-
-        <!--Message Entry START-->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/leavePartyButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:layout_weight="1"
+            android:text="@string/leave_party"
+            android:textColor="@color/black" />
+    </LinearLayout>
 
-            <EditText
-                android:id="@+id/editTextChatMessage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.70"
-                android:hint="@string/chat_message"
-                android:importantForAutofill="no"
-                android:inputType="textNoSuggestions" />
+    <!-- CHAT LOG START -->
+    <ListView android:layout_below="@id/topBar"
+        android:layout_above="@id/bottomBar"
+        android:id="@+id/listViewChatLog"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"/>
+    <!-- CHAT LOG END -->
 
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/sendButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.30"
-                android:clickable="true"
-                android:focusable="true"
-                app:backgroundTint="#FFFFFF"
-                app:srcCompat="@drawable/sundrop_button_test" />
+    <!--Message Entry START-->
+    <LinearLayout android:layout_alignParentBottom="true"
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
 
-        </LinearLayout>
+        <EditText
+            android:id="@+id/editTextChatMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.70"
+            android:hint="@string/chat_message"
+            android:importantForAutofill="no"
+            android:inputType="textNoSuggestions" />
 
-        <!--Message Entry END-->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/sendButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.30"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="#FFFFFF"
+            app:srcCompat="@drawable/sundrop_button_test" />
 
     </LinearLayout>
-</LinearLayout>
+    <!--Message Entry END-->
+
+
+</RelativeLayout>

@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient_animation"
+
     tools:context=".SettingsActivity">
 
     <LinearLayout
@@ -16,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <TextView style="@style/App_EditTextStyle"
             android:id="@+id/textViewTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -26,7 +28,7 @@
             tools:layout_editor_absoluteY="8dp" />
 
 
-        <EditText
+        <EditText style="@style/App_EditTextStyle"
             android:id="@+id/editTextDisplayName"
             android:layout_width="411dp"
             android:layout_height="wrap_content"
@@ -36,7 +38,7 @@
             tools:layout_editor_absoluteY="70dp"
             android:importantForAutofill="no" />
 
-        <EditText
+        <EditText style="@style/App_EditTextStyle"
             android:id="@+id/editTextEmail"
             android:layout_width="411dp"
             android:layout_height="wrap_content"
@@ -46,7 +48,7 @@
             tools:layout_editor_absoluteY="120dp"
             android:importantForAutofill="no" />
 
-        <EditText
+        <EditText style="@style/App_EditTextStyle"
             android:id="@+id/editTextSeeking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -62,7 +64,7 @@
             android:orientation="horizontal"
             android:weightSum="2">
 
-            <TextView
+            <TextView style="@style/App_EditTextStyle"
                 android:id="@+id/textViewStart"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -72,7 +74,7 @@
                 tools:layout_editor_absoluteX="11dp"
                 tools:layout_editor_absoluteY="221dp" />
 
-            <TextView
+            <TextView style="@style/App_EditTextStyle"
                 android:id="@+id/textViewEnd"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -100,7 +102,7 @@
                 tools:layout_editor_absoluteX="211dp"
                 tools:layout_editor_absoluteY="221dp">
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextSundayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -109,7 +111,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextMondayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -118,7 +120,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextTuesdayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -127,7 +129,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextWednesdayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -136,7 +138,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextThursdayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -145,7 +147,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextFridayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -154,7 +156,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextSaturdayStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -170,7 +172,7 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextSundayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -179,7 +181,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextMondayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -188,7 +190,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextTuesdayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -197,7 +199,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextWednesdayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -206,7 +208,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextThursdayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -215,7 +217,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextFridayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -224,7 +226,7 @@
                     android:inputType="time"
                     android:importantForAutofill="no" />
 
-                <EditText
+                <EditText style="@style/App_EditTextStyle"
                     android:id="@+id/editTextSaturdayEnd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -244,6 +246,9 @@
             android:weightSum="2">
 
             <Button
+                android:background="@drawable/button_border_transparent"
+                android:fontFamily="sans-serif-light"
+                android:textColor="@color/colorPrimary"
                 android:id="@+id/buttonCancel"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -253,6 +258,9 @@
                 tools:layout_editor_absoluteY="667dp" />
 
             <Button
+                android:background="@drawable/button_border_transparent"
+                android:fontFamily="sans-serif-light"
+                android:textColor="@color/colorPrimary"
                 android:id="@+id/buttonConfirm"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
