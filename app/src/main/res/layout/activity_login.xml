@@ -8,8 +8,9 @@
     android:background="@drawable/gradient_animation"
     tools:context="com.nmferrer.sundrop.LoginActivity">
 
-    <EditText style="@style/App_EditTextStyle"
+    <EditText
         android:id="@+id/editTextEmail"
+        style="@style/App_EditTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="251dp"
@@ -17,21 +18,18 @@
         android:ems="10"
         android:hint="@string/email"
         android:inputType="textEmailAddress"
-        android:textColor="@color/colorPrimaryDark"
-        android:textColorHint="@color/colorPrimaryDark"
         app:layout_constraintStart_toStartOf="@+id/createAccountButton"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText style="@style/App_EditTextStyle"
+    <EditText
         android:id="@+id/editTextPassword"
+        style="@style/App_EditTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:autofillHints="password"
         android:ems="10"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:textColor="@color/colorPrimaryDark"
-        android:textColorHint="@color/colorPrimaryDark"
         app:layout_constraintStart_toStartOf="@+id/editTextEmail"
         app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
 
@@ -71,4 +69,16 @@
         android:textSize="40sp"
         app:layout_constraintBottom_toTopOf="@+id/editTextEmail"
         app:layout_constraintEnd_toEndOf="@+id/editTextEmail" />
+
+    <Button
+        android:id="@+id/resendConfirmationButton"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/resend_confirmation_email"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

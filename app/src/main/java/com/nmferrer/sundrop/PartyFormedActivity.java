@@ -181,12 +181,14 @@ public class PartyFormedActivity extends AppCompatActivity {
 
     private void sendMessage(EditText editTextChatMessage, String partyID, String senderUID, String senderDisplayName) {
         String messageText = editTextChatMessage.getText().toString();
-        Message chatMessage = new Message(messageText, senderUID, senderDisplayName, partyID);
+        if (!messageText.equals("")) {
+            Message chatMessage = new Message(messageText, senderUID, senderDisplayName, partyID);
 
-        DatabaseReference messagesRef = databaseRef.child("Messages");
-        messagesRef.push().setValue(chatMessage);
-        Log.d(TAG, "messageSentSuccess " + chatMessage.getMessageSenderDisplayName() + ": " + chatMessage.getMessageText());
-        editTextChatMessage.setText("");
+            DatabaseReference messagesRef = databaseRef.child("Messages");
+            messagesRef.push().setValue(chatMessage);
+            Log.d(TAG, "messageSentSuccess " + chatMessage.getMessageSenderDisplayName() + ": " + chatMessage.getMessageText());
+            editTextChatMessage.setText("");
+        }
     }
 
     private void generateUsersListDialog() {

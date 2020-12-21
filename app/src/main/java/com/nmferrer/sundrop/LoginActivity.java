@@ -33,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText fieldPassword;
     private Button createAccountButton;
     private Button signInButton;
-
+    private Button resendConfirmationButton;
     private ConstraintLayout constraintLayout;
     private AnimationDrawable animationDrawable;
 
@@ -42,10 +42,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        //animation currently does nothing?
         constraintLayout = (ConstraintLayout) findViewById(R.id.loginConstraintLayout);
         animationDrawable = (AnimationDrawable) constraintLayout.getBackground();
-        animationDrawable.setEnterFadeDuration(3000);
-        animationDrawable.setExitFadeDuration(2000);
+        animationDrawable.setEnterFadeDuration(1000);
+        animationDrawable.setExitFadeDuration(1000);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -62,6 +63,7 @@ public class LoginActivity extends AppCompatActivity {
         fieldPassword = findViewById(R.id.editTextPassword);
         createAccountButton = findViewById(R.id.createAccountButton);
         signInButton = findViewById(R.id.signInButton);
+        resendConfirmationButton = findViewById(R.id.resendConfirmationButton);
 
         createAccountButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +77,17 @@ public class LoginActivity extends AppCompatActivity {
                 signIn(fieldEmail.getText().toString(), fieldPassword.getText().toString());
             }
         });
+
+        //REDUNDANT? USER WILL ONLY SEE THIS ACTIVITY WHEN SIGNED OUT
+        if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().isEmailVerified()) {
+            resendConfirmationButton.setVisibility(View.GONE);
+        }
+        resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendEmailVerification();
+            }
+        });
     }
 
     @Override
@@ -83,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() != null) {
             launchHome();
         }
+        //would there be strange behavior on sign out / sign in?
     }
 
     //ACCOUNT HANDLING
@@ -98,16 +112,16 @@ public class LoginActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
-                            Toast.makeText(LoginActivity.this, "Account successfully created.",
-                                    Toast.LENGTH_SHORT).show();
+
                             String UID = mAuth.getUid();
                             UserInfo userInfo = new UserInfo(UID, email, trimEmail(email));
                             Log.d(TAG, "userInfoCreated:success");
 
                             databaseRef.child("Users").child(UID).setValue(userInfo);
                             Log.d(TAG, "databasePushUser:success");
-
-                            launchHome(); //DO NOT LAUNCH IF CREATION FAILS
+                            sendEmailVerification();
+                            Toast.makeText(LoginActivity.this, "Account created successfully! A confirmation email will be arriving shortly.",
+                                    Toast.LENGTH_SHORT).show();
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -122,17 +136,21 @@ public class LoginActivity extends AppCompatActivity {
         if (!validateForm()) {
             return;
         }
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
-                            Toast.makeText(LoginActivity.this, "Sign-in successful.",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Sign-in successful.", Toast.LENGTH_SHORT).show();
                             FirebaseUser user = mAuth.getCurrentUser();
-                            launchHome(); //DO NOT LAUNCH IF SIGN IN FAILS
+                            if (user.isEmailVerified()) {
+                                Log.d(TAG, "isUserVerified:true");
+                                launchHome();
+                            } else {
+                                Log.d(TAG, "isUserVerified:false");
+                                Toast.makeText(LoginActivity.this, "Please verify your email before signing in.", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -140,6 +158,23 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    public void sendEmailVerification() {
+        // [START send_email_verification]
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+
+        user.sendEmailVerification()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Email sent.");
+                        }
+                    }
+                });
+        // [END send_email_verification]
     }
 
     //VALIDATE FORM
@@ -167,6 +202,7 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ViewActiveUsersActivity.class);
         startActivity(intent);
     }
+
     private void launchHome() {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);

@@ -4,13 +4,13 @@ https://medium.com/@joonasm.kauppinen/animated-gradient-background-on-android-pa
 -->
 <animation-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:duration="3000"
+    <item android:duration="1000"
         android:drawable="@drawable/gradient_start"/>
 
-    <item android:duration="3000"
+    <item android:duration="1000"
         android:drawable="@drawable/gradient_center"/>
 
-    <item android:duration="3000"
+    <item android:duration="1000"
         android:drawable="@drawable/gradient_end"/>
 
 </animation-list>
