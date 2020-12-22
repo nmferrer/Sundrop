@@ -99,7 +99,7 @@ public class SettingsActivity extends AppCompatActivity {
         //transparent notification bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         }
 
         //Firebase Setup
@@ -244,14 +244,14 @@ public class SettingsActivity extends AppCompatActivity {
                         String temp = savedInfo.getAvailability().trim();
                         String[] availabilityArr = temp.split("\n");
                         for (String s: availabilityArr) {
-                            //STRINGS ARE GUARANTEED TO FOLLOW FORMAT (DAY: TIME TO TIME) AND BE OF SIZE 4
-                            //e.g. Thursday: 10:00 to 11:00
+                            //STRINGS ARE GUARANTEED TO FOLLOW FORMAT (DAY: TIME AM|PM TO TIME AM|PM) AND BE OF SIZE 6
+                            //e.g. Thursday: 10:00 AM to 11:00 PM
                             s = s.trim();
                             Log.d(TAG, s);
                             String[] dayAndTime = s.split(" ");
                             String day = dayAndTime[0];
-                            String startTime = dayAndTime[1];
-                            String endTime = dayAndTime[3];
+                            String startTime = dayAndTime[1] + " " + dayAndTime[2];
+                            String endTime = dayAndTime[4] + " " + dayAndTime[5];
 
                             fillDateAndTimeFields(day, startTime, endTime);
                         }

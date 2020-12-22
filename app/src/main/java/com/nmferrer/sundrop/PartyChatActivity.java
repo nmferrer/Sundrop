@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -30,18 +29,12 @@ import com.firebase.ui.database.FirebaseListAdapter;
 import com.firebase.ui.database.FirebaseListOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 
 /*
 The main bulk of the application.
@@ -52,7 +45,7 @@ Users can:
     Postpone, cancel, or leave the party
     Invite new members
  */
-public class PartyFormedActivity extends AppCompatActivity {
+public class PartyChatActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
@@ -81,11 +74,9 @@ public class PartyFormedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_party_chat);
 
-        //TODO: TRANSPARENT NOTIFICATION BAR AND RESIZE
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
-            //w.setFlags(WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST, WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
 
 
@@ -142,7 +133,6 @@ public class PartyFormedActivity extends AppCompatActivity {
             }
         });
 
-        //TODO: WILL PROBABLY BREAK BECAUSE ID NOT SET ON CREATE
         //https://code.tutsplus.com/tutorials/how-to-create-an-android-chat-app-using-firebase--cms-27397
 
         Query queryCurrentParty = databaseRef.child("Messages").orderByChild("partyID").equalTo(currentPartyID);
@@ -211,13 +201,13 @@ public class PartyFormedActivity extends AppCompatActivity {
 
     private void generateLeavePartyDialog(final String partyName)  {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(PartyFormedActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(PartyChatActivity.this);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 databaseRef.child("Users/" + currentUID + "/inParty/" + currentPartyID).removeValue();
                 databaseRef.child("Parties/" + currentPartyID + "/members/" + currentUID).removeValue();
-                Toast.makeText(PartyFormedActivity.this, "Leaving party: " + partyName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(PartyChatActivity.this, "Leaving party: " + partyName, Toast.LENGTH_SHORT).show();
                 launchHome();
             }
         });

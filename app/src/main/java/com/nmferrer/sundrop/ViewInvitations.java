@@ -8,6 +8,7 @@
 package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -77,7 +78,7 @@ public class ViewInvitations extends AppCompatActivity {
         //transparent notification bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         }
 
         //Firebase Setup
@@ -134,16 +135,29 @@ public class ViewInvitations extends AppCompatActivity {
                 databaseRef.child("Invites").orderByChild("recipientUID").equalTo(currentUID);
 
         Log.d(TAG, "sentReferenceInitialized");
-        //TODO: SHOULD I USE A CHILD LISTENER?
+
+        //TODO: IMPLEMENT CANCEL INVITE onClick
         //ListView Fills: Sent Invites
-        ValueEventListener sentInvitesListener = new ValueEventListener() {
+        ChildEventListener sentInvitesListener = new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
-                    Invite invite = dataSnapshot.getValue(Invite.class);
-                    listSent.add(invite.toString());
-                    adapterSent.notifyDataSetChanged();
-                }
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Invite invite = snapshot.getValue(Invite.class);
+                listSent.add(invite.toString());
+                adapterSent.notifyDataSetChanged();
+            }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                Invite invite = snapshot.getValue(Invite.class);
+                listSent.remove(invite.toString());
+                adapterSent.notifyDataSetChanged();
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
             }
 
             @Override
@@ -151,40 +165,55 @@ public class ViewInvitations extends AppCompatActivity {
 
             }
         };
-        sentInvitesQuery.addValueEventListener(sentInvitesListener);
+        sentInvitesQuery.addChildEventListener(sentInvitesListener);
 
         //ListView Fills: Received Invites
-        ValueEventListener recvInvitesListener = new ValueEventListener() {
+        ChildEventListener recvInvitesListener = new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
-                    Invite invite = dataSnapshot.getValue(Invite.class);
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                    Invite invite = snapshot.getValue(Invite.class);
                     listRecv.add(invite.toString());
+                    Log.d(TAG, "addingMapping:" + invite.getSenderDisplayName() + ":" + invite.getSenderUID());
                     displayNameUIDMap.put(invite.getSenderDisplayName(), invite.getSenderUID());
                     adapterRecv.notifyDataSetChanged();
-                }
             }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                Invite invite = snapshot.getValue(Invite.class);
+                listRecv.remove(invite.toString());
+                adapterRecv.notifyDataSetChanged();
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
         };
-        recvInvitesQuery.addValueEventListener(recvInvitesListener);
+        recvInvitesQuery.addChildEventListener(recvInvitesListener);
 
-        mQueryValListenerMap.put(sentInvitesQuery, sentInvitesListener);
-        mQueryValListenerMap.put(recvInvitesQuery, recvInvitesListener);
+        mQueryChildListenerMap.put(sentInvitesQuery, sentInvitesListener);
+        mQueryChildListenerMap.put(recvInvitesQuery, recvInvitesListener);
 
         lvRecv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 final String pressedInvite = ((TextView) view).getText().toString();
                 Log.d(TAG, "clickedListView:\n" + pressedInvite);
-                //do a little string parsing
-                String[] sender_recipient_arr = pressedInvite.split("\\s+");
-                String senderDisplayName = sender_recipient_arr[0];
+                //BUILD KEY VIA PARSING
+                //TODO: QUERY BY partyName_senderUID_recipientUID
+                String[] inputLines = pressedInvite.split("\n");
+                String[] sender_recipient = inputLines[0].split(" -> "); // GUARANTEED FORMAT sender -> recipient
+                String partyName = inputLines[1];
+                String timeAndDate = inputLines[2];
+                String senderDisplayName = sender_recipient[0];
                 String senderUID = displayNameUIDMap.get(senderDisplayName);
-                String partyName = sender_recipient_arr[3];
                 Log.d(TAG, "clickedInviteFrom:" + senderDisplayName);
 
                 final String inviteKey = partyName + "_" + senderUID + "_" + currentUID;
@@ -201,6 +230,7 @@ public class ViewInvitations extends AppCompatActivity {
                         Invite queriedInvite = snapshot.getValue(Invite.class);
                         Log.d(TAG, "refAccessToString:" + queriedInvite.toString());
                         String party_sender_recipient = queriedInvite.getPartyName() + "_" + queriedInvite.getSender_recipient();
+                        Log.d(TAG, "PSR:" + party_sender_recipient);
                         generateAlertDialogPartyCreation(
                                 queriedInvite.getTime(), queriedInvite.getDate(),
                                 queriedInvite.getSenderUID(), queriedInvite.getRecipientUID(),
@@ -259,7 +289,6 @@ public class ViewInvitations extends AppCompatActivity {
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Delete invitation and create party entry
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                String partyName = party_sender_recipient.split("_")[0]; //[1] and [2] are sender and recipient
                 DatabaseReference queriedInvite = databaseRef.child("Invites/" + party_sender_recipient);
                 ValueEventListener queriedInviteListener = new ValueEventListener() {
                     @Override
@@ -270,19 +299,16 @@ public class ViewInvitations extends AppCompatActivity {
                         //construct party key from partyName_senderUID
                         String partyName = inviteInfo.getPartyName();
                         String senderUID = inviteInfo.getSenderUID();
-                        String partyUID  = partyName + "_" + senderUID;
+                        String partyUID  = inviteInfo.getPartyUID() ;
 
-                        //create party entry
-                        Party newParty = new Party(inviteInfo.getPartyName(), time, date);
-                        DatabaseReference newPartyRef = databaseRef.child("Parties").child(partyUID);
-                        newPartyRef.setValue(newParty);
-                        newPartyRef.child("members").child(senderUID).setValue(true);
-                        newPartyRef.child("members").child(recipientUID).setValue(true);
+                        //create party entry RECIPIENT ONLY. PARTY INITIALIZED ON CREATION, i.e. NEW INVITE
+                        DatabaseReference acceptedInviteRef = databaseRef.child("Parties").child(partyUID);
+                        acceptedInviteRef.child("members").child(recipientUID).setValue(true);
 
-                        //update user membership
-                        databaseRef.child("Users/" + senderUID + "/inParty/" + partyUID).setValue(true);
+                        //update user membership RECIPIENT ONLY. SENDER BECOMES MEMBER ON CREATION
                         databaseRef.child("Users/" + recipientUID + "/inParty/" + partyUID).setValue(true);
 
+                        //REMOVE INVITE toString FROM listRecv
                         listRecv.remove(inviteInfoString);
                         adapterRecv.notifyDataSetChanged();
                     }
@@ -293,7 +319,7 @@ public class ViewInvitations extends AppCompatActivity {
                     }
                 };
                 queriedInvite.addListenerForSingleValueEvent(queriedInviteListener);
-                databaseRef.child("Invites").child(party_sender_recipient).removeValue(); //REMOVE INVITE toString FROM listRecv
+                databaseRef.child("Invites").child(party_sender_recipient).removeValue();
 
                 //notify party creation
                 Toast.makeText(ViewInvitations.this,

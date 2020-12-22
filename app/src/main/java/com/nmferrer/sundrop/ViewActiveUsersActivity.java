@@ -44,9 +44,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO: SET DISPLAY NAME UPON ACCOUNT VERIFICATION?
-//TODO: NOTE THAT VALUE OF INVITATION IS DISPLAYNAME AT TIME OF SENDING, CONSIDER UPDATING DYNAMICALLY?
-//TODO: USE FIREBASE UI TO FILL ENTRIES INSTEAD
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
 
@@ -90,7 +87,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         //transparent notification bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         }
 
         //generate nameToLookupKey Hash Map
@@ -156,10 +153,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 //ADD ENTRY TO DB
                 Log.d(TAG, "isOnlineStatus:"+ debugFlagOnline);
                 if (currentUser != null) {
-                    databaseRef.child("Users")
-                            .child(currentUID)
-                            .child("online")
-                            .setValue(true);
+                    databaseRef.child("Users/" + currentUID + "/online").setValue(true);
 
                     debugFlagOnline = true;
                     Log.d(TAG, "isOnlineStatus:"+ debugFlagOnline + " user:" + currentUID);
@@ -223,7 +217,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                             //1) Already awaiting invite from you.
                             //2) Already in party with user.
                             //TODO: IMPLEMENT LOGIC CHECKS
-                            DataSnapshot inviteExistsCheck = dataSnapshot.child("receivedInvitesFrom");
                             if (currentUserInfo.getUID().equals(qUserInfo.getUID())) { //CHECK: USER PRESSED SELF
                                 Toast.makeText(ViewActiveUsersActivity.this,
                                         "Can't start a party by yourself!",
@@ -349,14 +342,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         builder.setPositiveButton(R.string.newParty, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Toast.makeText(ViewActiveUsersActivity.this, "Creating new party.", Toast.LENGTH_SHORT).show();
                 generateAlertDialogNewPartyCreation(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
             }
         });
         builder.setNegativeButton(R.string.existingParty, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Toast.makeText(ViewActiveUsersActivity.this, "Selecting existing party.", Toast.LENGTH_SHORT).show();
                 generateAlertDialogExistingPartyInvite(senderUID, recipientUID, senderDisplayName, recipientDisplayName);
             }
         });
@@ -391,18 +382,23 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 String date = editTextDate.getText().toString();
                 String time = editTextTime.getText().toString();
 
-                //TODO: CURRENT SOLUTION: KEEP INVITE TABLE FOR EASY LOOKUP, AND ATTACH sendTo/receiveFrom RELATIONSHIP FOR EASE OF USE
+                //TODO: INVITES ARE SOLELY HANDLED THROUGH INVITES TABLE. NO NEED FOR USER WRITES
                 //IS THIS EFFICIENT?
                 String inviteUID = partyName + "_" + senderUID +"_" + recipientUID; //allows for duplicate party names to exist and users can send invites to the same user for different parties
-                String partyUID = senderUID +"_" + partyName; //identifies creator of party as host
+                String partyUID =  partyName + "_" + senderUID; //identifies creator of party as host
                 Invite newInvite = new Invite(partyUID, partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date);
                 databaseRef.child("Invites").child(inviteUID).setValue(newInvite);
                 //RESOLVED: MODIFY SENT/RECEIVED KEYS TO ALLOW USERS TO SEND MULTIPLE INVITES IF PARTY IS DIFFERENT
-                //databaseRef.child("Users").child(senderUID).child("sentInviteTo").child(partyName).setValue(recipientUID);
-                //databaseRef.child("Users").child(recipientUID).child("receivedInviteFrom").child(partyName).setValue(senderUID);
 
+                //UPON NEW PARTY INVITE, CREATE PARTY ENTRY
+                Party newParty = new Party(partyName, time, date);
+                databaseRef.child("Parties/" + partyUID).setValue(newParty);
+                partyNameToLookupKey.put(partyName, partyUID);
+
+                //update user membership SENDER ONLY. RECIPIENT BECOMES MEMBER ON ACCEPTANCE
+                databaseRef.child("Users/" + senderUID + "/inParty/" + partyUID).setValue(true);
                 Toast.makeText(ViewActiveUsersActivity.this,
-                        "Invitation Sent!",
+                        "Party created and invitation sent!",
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -455,17 +451,22 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     //GIVEN PARTY NAME, GENERATE INVITE
                     final String partyName = listPartyOptions.get(partySelectSpinner.getSelectedItemPosition());
-                    Toast.makeText(ViewActiveUsersActivity.this,
-                            partyName,
-                            Toast.LENGTH_SHORT).show();
                     final String partyUID = partyNameToLookupKey.get(partyName);
                     final String party_sender_recipient = partyName + "_" + senderUID + "_" + recipientUID;
                     databaseRef.child("Parties/" + partyUID).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             Party queriedParty = snapshot.getValue(Party.class);
-                            Invite existingPartyInvite = new Invite(partyUID, partyName, currentUser.getUid(), currentUser.getDisplayName(), recipientUID, recipientDisplayName, queriedParty.getTime(), queriedParty.getDate());
-                            databaseRef.child("Invites/" + party_sender_recipient).setValue(existingPartyInvite);
+                            //PERFORM LOGIC CHECK TO SEE IF USER IS ALREADY IN PARTY. IF NOT, THEN CREATE AND SEND INVITE.
+                            DataSnapshot memberList = snapshot.child("members"); //CHECK MEMBER LIST
+                            if (memberList.hasChild(recipientUID)) {
+                                Toast.makeText(ViewActiveUsersActivity.this, "User is already in that party.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Invite existingPartyInvite = new Invite(partyUID, partyName, currentUserInfo.getUID(), currentUserInfo.getDisplayName(), recipientUID, recipientDisplayName, queriedParty.getTime(), queriedParty.getDate());
+                                databaseRef.child("Invites/" + party_sender_recipient).setValue(existingPartyInvite);
+                                Toast.makeText(ViewActiveUsersActivity.this, "Invite sent!", Toast.LENGTH_SHORT).show();
+
+                            }
                         }
 
                         @Override
@@ -473,6 +474,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
                         }
                     });
+
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
 
                 }
             });

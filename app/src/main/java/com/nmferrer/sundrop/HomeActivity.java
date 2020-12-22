@@ -32,7 +32,6 @@ import com.nmferrer.sundrop.experiments.RadialMenu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
@@ -64,7 +63,7 @@ public class HomeActivity extends AppCompatActivity {
         //transparent notification bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         }
 
         mAuth = FirebaseAuth.getInstance();
@@ -243,7 +242,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void launchPartyWithKey(String partyKey) {
-        Intent intent = new Intent(this, PartyFormedActivity.class);
+        Intent intent = new Intent(this, PartyChatActivity.class);
         intent.putExtra("partyID", partyKey);
         startActivity(intent);
     }

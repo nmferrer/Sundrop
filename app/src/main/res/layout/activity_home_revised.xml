@@ -12,6 +12,7 @@
         android:id="@+id/Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="148dp"
         android:layout_marginBottom="279dp"
         android:fontFamily="sans-serif-light"
         android:text="@string/sundrop"
@@ -20,7 +21,7 @@
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/knownIssuesButton" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
@@ -30,7 +31,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Title">
-
 
 
         <LinearLayout
@@ -74,6 +74,7 @@
             android:fontFamily="sans-serif-light"
             android:text="@string/party_finder"
             android:textColor="@color/colorPrimary" />
+
         <Button
             android:id="@+id/profileButton"
             android:layout_width="411dp"
@@ -131,16 +132,14 @@
         android:id="@+id/knownIssuesButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="84dp"
         android:background="@color/Transparent"
         android:fontFamily="sans-serif-light"
         android:text="Known Issues"
         android:textColor="@color/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/Title"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

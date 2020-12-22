@@ -51,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
         //transparent notification bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         }
 
         //animation currently does nothing?
@@ -137,11 +137,10 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
 
-                            String UID = mAuth.getUid();
-                            UserInfo userInfo = new UserInfo(UID, email, trimEmail(email));
+                            UserInfo userInfo = new UserInfo(mAuth.getUid(), email, trimEmail(email));
                             Log.d(TAG, "userInfoCreated:success");
 
-                            databaseRef.child("Users").child(UID).setValue(userInfo);
+                            databaseRef.child("Users").child(mAuth.getUid()).setValue(userInfo);
                             Log.d(TAG, "databasePushUser:success");
                             if (requireEmailVerification) {
                                 sendEmailVerification();
