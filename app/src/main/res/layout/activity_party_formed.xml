@@ -51,7 +51,6 @@
 
     <!-- CHAT LOG START -->
     <ListView android:layout_below="@id/topBar"
-        android:layout_above="@id/bottomBar"
         android:id="@+id/listViewChatLog"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -59,7 +58,7 @@
     <!-- CHAT LOG END -->
 
     <!--Message Entry START-->
-    <LinearLayout android:layout_alignParentBottom="true"
+    <LinearLayout android:layout_below="@id/listViewChatLog"
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -74,7 +73,7 @@
             android:hint="@string/chat_message"
             android:importantForAutofill="no"
             android:inputType="textNoSuggestions"
-            android:textColor="@color/Raisin_Black"/>
+            android:textColor="@color/Raisin_Black" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/sendButton"

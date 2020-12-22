@@ -13,9 +13,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -70,6 +73,12 @@ public class ViewInvitations extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_invitations);
+
+        //transparent notification bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        }
 
         //Firebase Setup
         mAuth = FirebaseAuth.getInstance();
@@ -250,17 +259,7 @@ public class ViewInvitations extends AppCompatActivity {
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Delete invitation and create party entry
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
                 String partyName = party_sender_recipient.split("_")[0]; //[1] and [2] are sender and recipient
-
-                //delete invitation
-                final DatabaseReference senderRef = databaseRef.child("Users").child(senderUID);
-                senderRef.child("sentInviteTo").child(partyName).removeValue();
-
-                final DatabaseReference recipientRef = databaseRef.child("Users").child(recipientUID);
-                recipientRef.child("receivedInviteFrom").child(partyName).removeValue();
-
-                //notify adapter
                 DatabaseReference queriedInvite = databaseRef.child("Invites/" + party_sender_recipient);
                 ValueEventListener queriedInviteListener = new ValueEventListener() {
                     @Override
@@ -281,8 +280,8 @@ public class ViewInvitations extends AppCompatActivity {
                         newPartyRef.child("members").child(recipientUID).setValue(true);
 
                         //update user membership
-                        senderRef.child("inParty").child(partyUID).setValue(true);
-                        recipientRef.child("inParty").child(partyUID).setValue(true);
+                        databaseRef.child("Users/" + senderUID + "/inParty/" + partyUID).setValue(true);
+                        databaseRef.child("Users/" + recipientUID + "/inParty/" + partyUID).setValue(true);
 
                         listRecv.remove(inviteInfoString);
                         adapterRecv.notifyDataSetChanged();

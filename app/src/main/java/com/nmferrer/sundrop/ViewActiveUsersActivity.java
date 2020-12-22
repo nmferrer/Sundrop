@@ -14,10 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -38,8 +41,6 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,6 +49,8 @@ import java.util.Map;
 //TODO: USE FIREBASE UI TO FILL ENTRIES INSTEAD
 
 public class ViewActiveUsersActivity extends AppCompatActivity {
+
+
     //Firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -83,6 +86,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_active_users_relative);
+
+        //transparent notification bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        }
 
         //generate nameToLookupKey Hash Map
         partyNameToLookupKey = new HashMap<>();
@@ -178,7 +187,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 mAuth.signOut();
                 Log.d(TAG, "mAuthSignOutSuccessful");
                 Log.d(TAG, "profileSignOut:success");
-                launchHome();
+                launchLogin();
             }
         });
 
@@ -389,8 +398,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 Invite newInvite = new Invite(partyUID, partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date);
                 databaseRef.child("Invites").child(inviteUID).setValue(newInvite);
                 //RESOLVED: MODIFY SENT/RECEIVED KEYS TO ALLOW USERS TO SEND MULTIPLE INVITES IF PARTY IS DIFFERENT
-                databaseRef.child("Users").child(senderUID).child("sentInviteTo").child(partyName).setValue(recipientUID);
-                databaseRef.child("Users").child(recipientUID).child("receivedInviteFrom").child(partyName).setValue(senderUID);
+                //databaseRef.child("Users").child(senderUID).child("sentInviteTo").child(partyName).setValue(recipientUID);
+                //databaseRef.child("Users").child(recipientUID).child("receivedInviteFrom").child(partyName).setValue(senderUID);
 
                 Toast.makeText(ViewActiveUsersActivity.this,
                         "Invitation Sent!",
@@ -493,6 +502,10 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
     private void launchHome() {
         Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
+    }
+    private void launchLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
     }
 }

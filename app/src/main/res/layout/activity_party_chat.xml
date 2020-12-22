@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Created by Noah Ferrer on 12/21/20 8:13 PM
+  ~ Copyright (c) 2020 . All rights reserved.
+  ~ Last modified 12/21/20 8:13 PM
+  ~
+  -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_start_chat">
+
+
+    <!-- CHAT LOG START -->
+    <RelativeLayout
+        android:id="@+id/titleBarAndButtons"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/listViewChatLog"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textViewPartyTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="@string/placeHolderTitle"
+            android:textColor="@color/Raisin_Black"
+            android:fontFamily="sans-serif-light"
+            android:textSize="40sp" />
+
+        <LinearLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/textViewPartyTitle"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/seeUsersButton"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/see_users"
+                android:textColor="@color/Raisin_Black" />
+
+            <Button
+                android:id="@+id/inviteMembersButton"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/invite_users"
+                android:textColor="@color/Raisin_Black" />
+
+            <Button
+                android:id="@+id/leavePartyButton"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/leave_party"
+                android:textColor="@color/Raisin_Black" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- CHAT LOG END -->
+    <!--Message Entry START-->
+
+    <ListView
+        android:id="@+id/listViewChatLog"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleBarAndButtons"
+        android:transcriptMode="alwaysScroll"
+        android:stackFromBottom="true" />
+
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listViewChatLog">
+
+        <EditText
+            android:id="@+id/editTextChatMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.70"
+            android:hint="@string/chat_message"
+            android:importantForAutofill="no"
+            android:inputType="textNoSuggestions"
+            android:textColor="@color/Raisin_Black" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/sendButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.30"
+            android:clickable="true"
+            android:focusable="true"
+            app:backgroundTint="#FFFFFF"
+            app:srcCompat="@drawable/sundrop_button_test" />
+
+    </LinearLayout>
+    <!--Message Entry END-->
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+

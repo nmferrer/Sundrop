@@ -7,41 +7,31 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_animation">
 
+
     <TextView
         android:id="@+id/Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="9dp"
-        android:layout_marginRight="9dp"
-        android:layout_marginBottom="285dp"
+        android:layout_marginBottom="279dp"
         android:fontFamily="sans-serif-light"
         android:text="@string/sundrop"
         android:textColor="@color/colorPrimary"
         android:textSize="50sp"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout"
-        app:layout_constraintEnd_toStartOf="@+id/funFactsButton"
-        app:layout_constraintTop_toBottomOf="@+id/funFactsButton" />
-
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/knownIssuesButton" />
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Title">
 
-        <Button
-            android:id="@+id/onlineButton"
-            android:layout_width="411dp"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/profileButton"
-            android:background="@drawable/button_border_transparent"
-            android:fontFamily="sans-serif-light"
-            android:text="@string/party_finder"
-            android:textColor="@color/colorPrimary" />
+
 
         <LinearLayout
             android:id="@+id/selectPartyBar"
@@ -75,6 +65,15 @@
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/onlineButton"
+            android:layout_width="411dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/profileButton"
+            android:background="@drawable/button_border_transparent"
+            android:fontFamily="sans-serif-light"
+            android:text="@string/party_finder"
+            android:textColor="@color/colorPrimary" />
         <Button
             android:id="@+id/profileButton"
             android:layout_width="411dp"
@@ -135,25 +134,13 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
+        android:layout_marginBottom="84dp"
         android:background="@color/Transparent"
         android:fontFamily="sans-serif-light"
         android:text="Known Issues"
         android:textColor="@color/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/funFactsButton"
+        app:layout_constraintBottom_toTopOf="@+id/Title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/funFactsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:background="@color/Transparent"
-        android:fontFamily="sans-serif-light"
-        android:text="Fun Facts"
-        android:textColor="@color/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/Title"
-        app:layout_constraintEnd_toEndOf="@+id/knownIssuesButton"
-        app:layout_constraintTop_toBottomOf="@+id/knownIssuesButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

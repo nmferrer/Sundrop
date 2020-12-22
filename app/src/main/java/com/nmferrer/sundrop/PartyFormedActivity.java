@@ -13,10 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -76,7 +79,15 @@ public class PartyFormedActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_party_formed);
+        setContentView(R.layout.activity_party_chat);
+
+        //TODO: TRANSPARENT NOTIFICATION BAR AND RESIZE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+            //w.setFlags(WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST, WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
 
         //Firebase Setup
         mAuth = FirebaseAuth.getInstance();

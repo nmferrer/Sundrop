@@ -6,10 +6,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -37,10 +40,19 @@ public class LoginActivity extends AppCompatActivity {
     private ConstraintLayout constraintLayout;
     private AnimationDrawable animationDrawable;
 
+    private boolean requireEmailVerification = false;
+    //TODO: UNTIL I CAN FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFO
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        //transparent notification bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        }
 
         //animation currently does nothing?
         constraintLayout = (ConstraintLayout) findViewById(R.id.loginConstraintLayout);
@@ -78,9 +90,9 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        //REDUNDANT? USER WILL ONLY SEE THIS ACTIVITY WHEN SIGNED OUT
-        if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().isEmailVerified()) {
-            resendConfirmationButton.setVisibility(View.GONE);
+        //handle case where user creates account but no email received, disappears otherwise
+        if (mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()) {
+            resendConfirmationButton.setVisibility(View.VISIBLE);
         }
         resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,8 +107,20 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         if (mAuth.getCurrentUser() != null) {
             launchHome();
+        }//handle case where user creates account but no email received, disappears otherwise
+
+        //TODO: UNTIL I CAN FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFO
+        if (requireEmailVerification) {
+            if (mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()) {
+                resendConfirmationButton.setVisibility(View.VISIBLE);
+            }
+            resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    sendEmailVerification();
+                }
+            });
         }
-        //would there be strange behavior on sign out / sign in?
     }
 
     //ACCOUNT HANDLING
@@ -119,9 +143,15 @@ public class LoginActivity extends AppCompatActivity {
 
                             databaseRef.child("Users").child(UID).setValue(userInfo);
                             Log.d(TAG, "databasePushUser:success");
-                            sendEmailVerification();
-                            Toast.makeText(LoginActivity.this, "Account created successfully! A confirmation email will be arriving shortly.",
-                                    Toast.LENGTH_SHORT).show();
+                            if (requireEmailVerification) {
+                                sendEmailVerification();
+                                Toast.makeText(LoginActivity.this, "Account created successfully! A confirmation email will be arriving shortly.",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                launchHome();
+                                Toast.makeText(LoginActivity.this, "Account created successfully! Logging in...",
+                                        Toast.LENGTH_SHORT).show();
+                            }
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -144,12 +174,16 @@ public class LoginActivity extends AppCompatActivity {
                             Log.d(TAG, "signInWithEmail:success");
                             Toast.makeText(LoginActivity.this, "Sign-in successful.", Toast.LENGTH_SHORT).show();
                             FirebaseUser user = mAuth.getCurrentUser();
-                            if (user.isEmailVerified()) {
-                                Log.d(TAG, "isUserVerified:true");
-                                launchHome();
+                            if (requireEmailVerification) { //TODO: UNTIL I FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFORMATION
+                                if (user.isEmailVerified()) {
+                                    Log.d(TAG, "isUserVerified:true");
+                                    launchHome();
+                                } else {
+                                    Log.d(TAG, "isUserVerified:false");
+                                    Toast.makeText(LoginActivity.this, "Please verify your email before signing in.", Toast.LENGTH_SHORT).show();
+                                }
                             } else {
-                                Log.d(TAG, "isUserVerified:false");
-                                Toast.makeText(LoginActivity.this, "Please verify your email before signing in.", Toast.LENGTH_SHORT).show();
+                                launchHome();
                             }
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
