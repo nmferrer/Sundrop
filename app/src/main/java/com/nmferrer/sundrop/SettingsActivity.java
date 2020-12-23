@@ -287,7 +287,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private boolean validateForm() {
-        //TODO: START TIMES MUST BE LESS THAN END TIMES
+        //TODO: Make call to validate times.
         boolean valid = true;
         String email = editTextEmail.getText().toString();
         String displayName = editTextDisplayName.getText().toString();

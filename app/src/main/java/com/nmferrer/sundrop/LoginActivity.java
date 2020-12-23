@@ -1,15 +1,18 @@
 package com.nmferrer.sundrop;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -102,20 +105,9 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        if (mAuth.getCurrentUser() != null) {
+        if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().isEmailVerified()) {
             launchHome();
-        }//handle case where user creates account but no email received, disappears otherwise
-
-        //TODO: UNTIL I CAN FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFO
-        if (mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()) {
-            resendConfirmationButton.setVisibility(View.VISIBLE);
-        }
-        resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sendEmailVerification();
-            }
-        });
+        }//handle case where user creates account but no email received
 
     }
 
@@ -161,15 +153,14 @@ public class LoginActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success");
-                    Toast.makeText(LoginActivity.this, "Sign-in successful.", Toast.LENGTH_SHORT).show();
                     FirebaseUser user = mAuth.getCurrentUser();
                     if (user.isEmailVerified()) {
                         Log.d(TAG, "isUserVerified:true");
+                        Toast.makeText(LoginActivity.this, "Sign-in successful.", Toast.LENGTH_SHORT).show();
                         launchHome();
                     } else {
                         Log.d(TAG, "isUserVerified:false");
-                        Toast.makeText(LoginActivity.this, "Please verify your email before signing in.", Toast.LENGTH_SHORT).show();
-                        //TODO: INSERT DIALOG TO PROMPT RESEND
+                        generateResendConfirmationDialog();
                     }
                 } else {
                     Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -201,7 +192,23 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void generateResendConfirmationDialog() {
-
+        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                sendEmailVerification();
+                Toast.makeText(LoginActivity.this, "A confirmation email will be arriving shortly.", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+        builder.setTitle("Resend confirmation email?");
+        builder.setMessage("Your account has not been verified yet. Would you like to resend the confirmation email?");
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     //VALIDATE FORM
@@ -224,8 +231,6 @@ public class LoginActivity extends AppCompatActivity {
         }
         return valid;
     }
-
-
 
     private String trimEmail(String email) {
         int endIndex = email.indexOf('@');
