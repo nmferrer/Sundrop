@@ -121,6 +121,6 @@ public class Invite {
 
     @Override
     public String toString() {
-        return String.format("%s -> %s\n%s\n%s %s\nLogged %s", senderDisplayName, recipientDisplayName, partyName, date, time, timeLogged.toString());
+        return String.format("%s -> %s\n%s\n%s %s", senderDisplayName, recipientDisplayName, partyName, date, time);
     }
 }

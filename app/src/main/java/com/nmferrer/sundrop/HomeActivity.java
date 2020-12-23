@@ -3,7 +3,6 @@ package com.nmferrer.sundrop;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +27,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.nmferrer.sundrop.experiments.RadialMenu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,22 +125,18 @@ public class HomeActivity extends AppCompatActivity {
         });
 
 
-        //TODO: BECAUSE I CLEAR AND REPOPULATE DURING onStart(), SPINNER WILL RESET. CAN I MAKE THIS PERSISTENT?
         //Adapter setup
         partyOptionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, listPartyOptions);
         partySelectSpinner.setAdapter(partyOptionsAdapter);
         partyOptionsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //TODO: NOT THE MOST ELEGANT SOLUTION. CAN I CLEAN THIS UP?
         partySelectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            //TODO: TEXT RETURNS TO BLACK WHEN PRESSING BACK. CHANGE AT XML?
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                ((TextView)adapterView.getChildAt(0)).setTextColor(Color.WHITE);
+                ((TextView)adapterView.getChildAt(0)).setTextColor(getResources().getColor(R.color.colorPrimary));
             }
-
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                ((TextView)adapterView.getChildAt(0)).setTextColor(Color.WHITE);
-            }
+            public void onNothingSelected(AdapterView<?> adapterView) {}
         });
 
         partyConfirmButton.setOnClickListener(new View.OnClickListener() {
@@ -162,8 +156,6 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
 
     @Override
@@ -191,9 +183,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
+                public void onCancelled(@NonNull DatabaseError error) { }
             });
         }
     }
@@ -202,11 +192,21 @@ public class HomeActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
     }
-
-    private void launchSinglePlayer() {
-        Intent intent = new Intent(this, RadialMenu.class);
-        startActivity(intent);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        partySelectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                ((TextView)adapterView.getChildAt(0)).setTextColor(getResources().getColor(R.color.colorPrimary));
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                ((TextView)adapterView.getChildAt(0)).setTextColor(getResources().getColor(R.color.colorPrimary));
+            }
+        });
     }
+
 
     private void launchLogin() {
         Intent intent = new Intent(this, LoginActivity.class);

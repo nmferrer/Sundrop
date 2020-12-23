@@ -43,7 +43,6 @@
 
             <Spinner
                 android:id="@+id/partySelectSpinner"
-                style="@style/App_EditTextStyle"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.75"

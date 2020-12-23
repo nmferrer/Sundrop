@@ -135,6 +135,7 @@ public class PartyChatActivity extends AppCompatActivity {
 
         //https://code.tutsplus.com/tutorials/how-to-create-an-android-chat-app-using-firebase--cms-27397
 
+        //NOTE: QUERIES MUST ACCESS ALL ENTRIES TO FILTER RELEVANT MESSAGES
         Query queryCurrentParty = databaseRef.child("Messages").orderByChild("partyID").equalTo(currentPartyID);
         FirebaseListOptions<Message> options = new FirebaseListOptions.Builder<Message>()
                 .setQuery(queryCurrentParty, Message.class)

@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO: CALL TO USERINFO IS ASYNCHRONOUS, I.E. NOT GUARANTEED UNLESS ACTED IN LISTENER
 //TODO: TRACK INVITES AWAY FROM USER INFO
 
 public class ViewInvitations extends AppCompatActivity {
@@ -60,13 +59,9 @@ public class ViewInvitations extends AppCompatActivity {
     //Pulled Data
 
     //Listeners
-    private ValueEventListener profileListener;
-    private HashMap<Query, ValueEventListener> mQueryValListenerMap;
     private HashMap<Query, ChildEventListener> mQueryChildListenerMap;
-    private HashMap<DatabaseReference, ValueEventListener> mDatabaseRefValEventListenerMap;
-    private HashMap<DatabaseReference, ChildEventListener> mDatabaseRefChildEventListenerMap;
-
     private HashMap<String, String> displayNameUIDMap;
+
     //Debug
     private final String TAG = "VIEW_INVITATIONS_DEBUG";
 
@@ -87,11 +82,7 @@ public class ViewInvitations extends AppCompatActivity {
         currentUID = mAuth.getCurrentUser().getUid();
 
         //Listener Setup
-        mQueryValListenerMap = new HashMap<>();
         mQueryChildListenerMap = new HashMap<>();
-        mDatabaseRefValEventListenerMap = new HashMap<>();
-        mDatabaseRefChildEventListenerMap = new HashMap<>();
-
         displayNameUIDMap = new HashMap<>();
 
         //UI Setup
@@ -129,14 +120,12 @@ public class ViewInvitations extends AppCompatActivity {
         listRecv.clear(); //listRecv must update on activity start
         displayNameUIDMap = new HashMap<>();
 
+        //TODO: ALLOWED REFERENCE IS SUCCESSFUL BUT QUERY IS NOT
+        //NOTE THAT QUERIES MUST ACCESS ALL CHILDREN TO FILTER OUT RELEVANT RESULTS
         Query sentInvitesQuery =
                 databaseRef.child("Invites").orderByChild("senderUID").equalTo(currentUID);
-        Query recvInvitesQuery =
-                databaseRef.child("Invites").orderByChild("recipientUID").equalTo(currentUID);
-
         Log.d(TAG, "sentReferenceInitialized");
 
-        //TODO: IMPLEMENT CANCEL INVITE onClick
         //ListView Fills: Sent Invites
         ChildEventListener sentInvitesListener = new ChildEventListener() {
             @Override
@@ -145,55 +134,60 @@ public class ViewInvitations extends AppCompatActivity {
                 listSent.add(invite.toString());
                 adapterSent.notifyDataSetChanged();
             }
+
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 Invite invite = snapshot.getValue(Invite.class);
                 listSent.remove(invite.toString());
                 adapterSent.notifyDataSetChanged();
             }
+
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
             }
+
             @Override
             public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         };
         sentInvitesQuery.addChildEventListener(sentInvitesListener);
+
+        Query recvInvitesQuery =
+                databaseRef.child("Invites").orderByChild("recipientUID").equalTo(currentUID);
+        Log.d(TAG, "recvReferenceInitialized");
 
         //ListView Fills: Received Invites
         ChildEventListener recvInvitesListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                    Invite invite = snapshot.getValue(Invite.class);
-                    listRecv.add(invite.toString());
-                    Log.d(TAG, "addingMapping:" + invite.getSenderDisplayName() + ":" + invite.getSenderUID());
-                    displayNameUIDMap.put(invite.getSenderDisplayName(), invite.getSenderUID());
-                    adapterRecv.notifyDataSetChanged();
+                Invite invite = snapshot.getValue(Invite.class);
+                listRecv.add(invite.toString());
+                Log.d(TAG, "addingMapping:" + invite.getSenderDisplayName() + ":" + invite.getSenderUID());
+                displayNameUIDMap.put(invite.getSenderDisplayName(), invite.getSenderUID());
+                adapterRecv.notifyDataSetChanged();
             }
+
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 Invite invite = snapshot.getValue(Invite.class);
                 listRecv.remove(invite.toString());
                 adapterRecv.notifyDataSetChanged();
             }
+
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
             }
+
             @Override
             public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         };
         recvInvitesQuery.addChildEventListener(recvInvitesListener);
@@ -207,7 +201,6 @@ public class ViewInvitations extends AppCompatActivity {
                 final String pressedInvite = ((TextView) view).getText().toString();
                 Log.d(TAG, "clickedListView:\n" + pressedInvite);
                 //BUILD KEY VIA PARSING
-                //TODO: QUERY BY partyName_senderUID_recipientUID
                 String[] inputLines = pressedInvite.split("\n");
                 String[] sender_recipient = inputLines[0].split(" -> "); // GUARANTEED FORMAT sender -> recipient
                 String partyName = inputLines[1];
@@ -240,7 +233,6 @@ public class ViewInvitations extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
                     }
                 });
             }
@@ -251,25 +243,10 @@ public class ViewInvitations extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        for (Map.Entry<Query, ValueEventListener> entry: mQueryValListenerMap.entrySet()) {
-            Query query = entry.getKey();
-            ValueEventListener listener = entry.getValue();
-            query.removeEventListener(listener);
-        }
-        for (Map.Entry<Query, ChildEventListener> entry: mQueryChildListenerMap.entrySet()) {
+        for (Map.Entry<Query, ChildEventListener> entry : mQueryChildListenerMap.entrySet()) {
             Query query = entry.getKey();
             ChildEventListener listener = entry.getValue();
             query.removeEventListener(listener);
-        }
-        for (Map.Entry<DatabaseReference, ValueEventListener> entry: mDatabaseRefValEventListenerMap.entrySet()) {
-            DatabaseReference ref = entry.getKey();
-            ValueEventListener listener = entry.getValue();
-            ref.removeEventListener(listener);
-        }
-        for (Map.Entry<DatabaseReference, ChildEventListener> entry: mDatabaseRefChildEventListenerMap.entrySet()) {
-            DatabaseReference ref = entry.getKey();
-            ChildEventListener listener = entry.getValue();
-            ref.removeEventListener(listener);
         }
     }
 
@@ -296,10 +273,8 @@ public class ViewInvitations extends AppCompatActivity {
                         Invite inviteInfo = snapshot.getValue(Invite.class);
                         String inviteInfoString = inviteInfo.toString();
 
-                        //construct party key from partyName_senderUID
-                        String partyName = inviteInfo.getPartyName();
-                        String senderUID = inviteInfo.getSenderUID();
-                        String partyUID  = inviteInfo.getPartyUID() ;
+                        //construct party key from inviteInfo
+                        String partyUID = inviteInfo.getPartyUID();
 
                         //create party entry RECIPIENT ONLY. PARTY INITIALIZED ON CREATION, i.e. NEW INVITE
                         DatabaseReference acceptedInviteRef = databaseRef.child("Parties").child(partyUID);
@@ -329,12 +304,26 @@ public class ViewInvitations extends AppCompatActivity {
         });
         builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) { //Delete invitation only
-                DatabaseReference senderRef = databaseRef.child("Users").child(senderUID);
-                DatabaseReference recipientRef = databaseRef.child("Users").child(recipientUID);
-                senderRef.child("sentInviteTo").child(recipientUID).removeValue();
-                recipientRef.child("receivedInviteFrom").child(senderUID).removeValue();
+            public void onClick(DialogInterface dialogInterface, int i) { //DELETE INVITATION ONLY
+                DatabaseReference queriedInvite = databaseRef.child("Invites/" + party_sender_recipient);
+                ValueEventListener queriedInviteListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Invite inviteInfo = snapshot.getValue(Invite.class);
+                        String inviteInfoString = inviteInfo.toString();
 
+                        //REMOVE INVITE toString FROM listRecv
+                        listRecv.remove(inviteInfoString);
+                        adapterRecv.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                };
+                queriedInvite.addListenerForSingleValueEvent(queriedInviteListener);
+                databaseRef.child("Invites").child(party_sender_recipient).removeValue();
                 //notify party creation
                 Toast.makeText(ViewInvitations.this,
                         "Invite deleted.",

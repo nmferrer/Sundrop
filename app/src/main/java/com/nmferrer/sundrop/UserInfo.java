@@ -6,7 +6,6 @@ import java.util.Objects;
 public class UserInfo {
     private String UID;
     private String displayName;
-    private String email;
     private String seeking;
     private String availability;
     private boolean isOnline;
@@ -19,7 +18,6 @@ public class UserInfo {
     public UserInfo(String UID, String displayName, String email, String seeking, String availability, boolean isOnline, List<String> sentInvites, List<String> receivedInvites, List<String> formedParty) {
         this.UID = UID;
         this.displayName = displayName;
-        this.email = email;
         this.seeking = seeking;
         this.availability = availability;
         this.isOnline = isOnline;
@@ -31,15 +29,13 @@ public class UserInfo {
     public UserInfo() {
         this.UID = null;
         this.displayName = null;
-        this.email = null;
         this.seeking = null;
         this.availability = null;
         this.isOnline = false;
     }
 
-    public UserInfo(String UID, String email, String displayName) {
+    public UserInfo(String UID, String displayName) {
         this.UID = UID;
-        this.email = email;
         this.displayName = displayName;
         this.seeking = null;
         this.availability = null;
@@ -49,7 +45,6 @@ public class UserInfo {
     public UserInfo(String UID, String displayName, String email, String seeking, String availability, boolean isOnline) {
         this.UID = UID;
         this.displayName = displayName;
-        this.email = email;
         this.seeking = seeking;
         this.availability = availability;
         this.isOnline = isOnline;
@@ -71,14 +66,6 @@ public class UserInfo {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getSeeking() {

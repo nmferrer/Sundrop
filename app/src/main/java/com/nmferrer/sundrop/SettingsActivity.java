@@ -83,6 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Pulled Data
     private UserInfo updateUserInfo;
     private String oldDisplayName;
+    private String oldEmail;
     //Listeners
     private HashMap<DatabaseReference, ValueEventListener> mValueEventListenerMap;
     private HashMap<DatabaseReference, ChildEventListener> mChildEventListenerMap;
@@ -157,7 +158,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 //validate forms
                 if (!validateForm()) {
-                    Toast.makeText(SettingsActivity.this, "Email field must be filled.",
+                    Toast.makeText(SettingsActivity.this, "Required fields must be filled.",
                             Toast.LENGTH_SHORT).show();
                 } else {
                     final String UID, updateDisplayName, updateEmail, updateSeeking, updateAvailability;
@@ -170,7 +171,6 @@ public class SettingsActivity extends AppCompatActivity {
                     String updateConfirmationMessage =
                             "The following changes will be made to your profile:\n" +
                                     "Display Name: " + updateDisplayName + "\n" +
-                                    "Email: " + updateEmail + "\n" +
                                     "Looking For: " + updateSeeking +" \n" +
                                     "Availability:\n" + updateAvailability;
 
@@ -181,17 +181,18 @@ public class SettingsActivity extends AppCompatActivity {
                             //TODO: ENSURE THIS DOES NOT OVERWRITE ADDITIONAL ENTRIES
                             DatabaseReference updatedProfile = databaseRef.child("Users").child(UID);
                             updatedProfile.child("displayName").setValue(updateDisplayName);
-                            updatedProfile.child("email").setValue(updateEmail);
                             updatedProfile.child("seeking").setValue(updateSeeking);
                             updatedProfile.child("availability").setValue(updateAvailability);
 
                             Log.d(TAG, "pushToRegUsers:Success");
-                            //TODO: THIS SHOULD ONLY EXECUTE IF USER IS "ONLINE"
                             Log.d(TAG, "pushToActiveUsers:Success");
 
                             //IF displayName IS CHANGED, THEN DELETE OLD ENTRY
                             if (!oldDisplayName.equals(updateDisplayName)) {
                                 Log.d(TAG, "deletionChangedName:Success");
+                            }
+                            if(!oldEmail.equals(updateEmail)) {
+                                //TODO: UPDATE mAuth CREDENTIALS
                             }
                             Log.d(TAG, "pushToDisplayNameUID:Success");
                             launchHome();
@@ -226,20 +227,19 @@ public class SettingsActivity extends AppCompatActivity {
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
         if (firebaseUser != null) {
             String UID = currentUser.getUid();
-
+            editTextEmail.setText(mAuth.getCurrentUser().getEmail());
             //WRITES TO USERS
             ValueEventListener profileListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     UserInfo savedInfo = snapshot.getValue(UserInfo.class);
-                    editTextEmail.setText(savedInfo.getEmail());
                     if (savedInfo.getDisplayName() != null) {
                         editTextDisplayName.setText(savedInfo.getDisplayName());
                     }
                     if (savedInfo.getSeeking() != null) {
                         editTextSeeking.setText(savedInfo.getSeeking());
                     }
-                    if (savedInfo.getAvailability() != null) {
+                    if (!savedInfo.getAvailability().equals("")) {
                         //parse String and fill appropriate fields
                         String temp = savedInfo.getAvailability().trim();
                         String[] availabilityArr = temp.split("\n");
@@ -256,8 +256,9 @@ public class SettingsActivity extends AppCompatActivity {
                             fillDateAndTimeFields(day, startTime, endTime);
                         }
                     }
-
+                    //POSSIBLE UPDATES
                     oldDisplayName = savedInfo.getDisplayName(); //pull old displayName for comparison
+                    oldEmail = mAuth.getCurrentUser().getEmail(); //pull account email for comparison
                 }
 
                 @Override
@@ -289,8 +290,7 @@ public class SettingsActivity extends AppCompatActivity {
         //TODO: START TIMES MUST BE LESS THAN END TIMES
         boolean valid = true;
         String email = editTextEmail.getText().toString();
-        //String displayName = fieldDisplayName.getText().toString();
-        //String status = fieldStatus.getText().toString();
+        String displayName = editTextDisplayName.getText().toString();
 
         //time checks here?
         if (TextUtils.isEmpty(email)) {
@@ -299,8 +299,59 @@ public class SettingsActivity extends AppCompatActivity {
         } else {
             editTextEmail.setError(null);
         }
-        //OPTIONAL: displayName and Status
+        if (TextUtils.isEmpty(displayName)) {
+            editTextDisplayName.setError("Required.");
+            valid = false;
+        } else {
+            editTextDisplayName.setError(null);
+        }
         return valid;
+    }
+
+    private boolean validateTimes(EditText startTime, EditText endTime) {
+        //TODO: LOGIC ASSUMES USER INPUTS "FRIENDLY" FORMAT
+        //MODIFY REGEX TO BE MORE VERSATILE
+
+        //LOGIC ASSUMES TEXT FOLLOWS FORMAT XX:XX [AM|PM]
+        String[] timeAmPmStart = startTime.getText().toString().split(" ");
+        String[] timeAmPmEnd = endTime.getText().toString().split(" ");
+        String[] timeStart = timeAmPmStart[0].split(":");
+        String[] timeEnd = timeAmPmEnd[0].split(":");
+        String amOrPmStart = timeAmPmStart[1];
+        String amOrPmEnd = timeAmPmEnd[1];
+        int startTimeHour = Integer.parseInt(timeStart[0]);
+        int startTimeMin = Integer.parseInt(timeStart[1]);
+        int endTimeHour = Integer.parseInt(timeEnd[0]);
+        int endTimeMin = Integer.parseInt(timeEnd[1]);
+
+        if (startTimeHour > 12) {
+            startTime.setError("Invalid range.");
+            return false;
+        }
+        if (endTimeHour > 12) {
+            endTime.setError("Invalid range");
+            return false;
+        }
+        if (amOrPmStart.equals("PM") && amOrPmEnd.equals("AM")) { //PM TO AM
+            startTime.setError("Start time must be later than end time.");
+            return false;
+        }
+        if (amOrPmStart.equals(amOrPmEnd)) { //BOTH AM OR BOTH PM
+            if (startTimeHour != 12 && startTimeHour > endTimeHour) {
+                startTime.setError("Start time must be later than end time.");
+                return false;
+            } else if (startTimeHour == endTimeHour) {
+                if (startTimeMin > endTimeMin) {
+                    startTime.setError("Start time must be later than end time.");
+                }
+            }
+        }
+        if (!amOrPmStart.equals(amOrPmEnd)) { //AM TO PM
+            //DO NOTHING
+        }
+        startTime.setError(null);
+        endTime.setError(null);
+        return true;
     }
 
     private String generateAvailabilityString() {

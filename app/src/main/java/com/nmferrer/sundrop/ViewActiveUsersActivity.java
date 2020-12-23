@@ -65,12 +65,11 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
     private UserInfo currentUserInfo;
     private String currentUID;
 
-   //Listeners
+    //Listeners
     private ChildEventListener isOnlineListener;
     private ValueEventListener profileListener;
     private HashMap<DatabaseReference, ValueEventListener> mDatabaseRefValEventListenerMap;
     private HashMap<Query, ChildEventListener> mQueryChildListenerMap;
-    private HashMap<Query, ValueEventListener> mQueryValListenerMap;
 
     //Debug
     private final String TAG = "SEEKING_USERS_DEBUG";
@@ -99,9 +98,9 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             ArrayList<String> lookupKeys = getIntent().getStringArrayListExtra("partyLookupKeys");
             Log.d(TAG, "bundlePassedToActivity:partyLookupKeys");
 
-            for (int i = 0; i < partyNames.size(); i++) {
-                partyNameToLookupKey.put(partyNames.get(i), lookupKeys.get(i));
-                Log.d(TAG, "addingPair:" + partyNames.get(i) + ":" + lookupKeys.get(i));
+            for (int index = 0; index < partyNames.size(); index++) {
+                partyNameToLookupKey.put(partyNames.get(index), lookupKeys.get(index));
+                Log.d(TAG, "addingPair:" + partyNames.get(index) + ":" + lookupKeys.get(index));
             }
         } else {
             Log.d(TAG, "bundlePassedToActivity:false");
@@ -115,7 +114,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         //Hash Map Setup
         mDatabaseRefValEventListenerMap = new HashMap<>();
         mQueryChildListenerMap = new HashMap<>();
-        mQueryValListenerMap = new HashMap<>();
 
         //QUERY CURRENT USER'S PROFILE
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
@@ -124,9 +122,10 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             profileListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    Log.d(TAG, "queryCurrentUserProfileValueSet");
                     currentUserInfo = snapshot.getValue(UserInfo.class);
+                    Log.d(TAG, "onCreateQueryCurrentUserProfileValueSet:" + currentUserInfo.getDisplayName());
                 }
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     //DATA ACCESS CANCELLED
@@ -145,18 +144,17 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         lv.setClickable(true);
 
 
-
         //Listener Setup
         optInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //ADD ENTRY TO DB
-                Log.d(TAG, "isOnlineStatus:"+ debugFlagOnline);
+                Log.d(TAG, "isOnlineStatus:" + debugFlagOnline);
                 if (currentUser != null) {
                     databaseRef.child("Users/" + currentUID + "/online").setValue(true);
 
                     debugFlagOnline = true;
-                    Log.d(TAG, "isOnlineStatus:"+ debugFlagOnline + " user:" + currentUID);
+                    Log.d(TAG, "isOnlineStatus:" + debugFlagOnline + " user:" + currentUID);
                 } else {
                     Log.d(TAG, "Opt-in failure.");
                 }
@@ -173,11 +171,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "signOutAttempt");
-                if (debugFlagOnline) {
-                    databaseRef.child("Users").child(currentUser.getUid()).child("online").setValue(false);
-                    Log.d(TAG, "databaseSignOutSuccessful");
-                    debugFlagOnline = false;
-                }
+                databaseRef.child("Users/" + currentUID + "/online").setValue(false);
                 mAuth.signOut();
                 Log.d(TAG, "mAuthSignOutSuccessful");
                 Log.d(TAG, "profileSignOut:success");
@@ -207,10 +201,10 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) { //should only yield one result
                             UserInfo qUserInfo = dataSnapshot.getValue(UserInfo.class);
                             Log.d(TAG, "accessQueriedUserAttempt");
-                            Log.d(TAG, ""+ qUserInfo.toString());
+                            Log.d(TAG, "" + qUserInfo.toString());
                             Log.d(TAG, "accessQueriedUserSuccess");
                             Log.d(TAG, "accessCurrentUserAttempt");
-                            Log.d(TAG, ""+ currentUserInfo.toString());
+                            Log.d(TAG, "" + currentUserInfo.toString());
                             Log.d(TAG, "accessCurrentUserSuccess");
 
                             //TODO: IMPLEMENT LOGIC CHECKS
@@ -234,7 +228,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
                     }
                 };
                 queryUID.addListenerForSingleValueEvent(queryUIDListener); //SINGLE USE LISTENER, OTHERWISE REDUNDANT CALLS OCCUR
@@ -270,9 +263,10 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             profileListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    Log.d(TAG, "queryCurrentUserProfileValueSet");
                     currentUserInfo = snapshot.getValue(UserInfo.class);
+                    Log.d(TAG, "onStartQueryCurrentUserProfileValueSet:" + currentUserInfo.getDisplayName());
                 }
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     //DATA ACCESS CANCELLED
@@ -316,14 +310,16 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 String UID = snapshot.getKey();
                 UserInfo userInfo = snapshot.getValue(UserInfo.class);
                 Log.d(TAG, UID + " isOnline: " + userInfo.isOnline());
-                if(!userInfo.isOnline()) {
+                if (!userInfo.isOnline()) {
                     listItems.remove(userInfo.getDisplayName());
                     adapter.notifyDataSetChanged();
                 }
             }
+
             @Override
             public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
             }
@@ -384,15 +380,16 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
 
                 //TODO: INVITES ARE SOLELY HANDLED THROUGH INVITES TABLE. NO NEED FOR USER WRITES
                 //IS THIS EFFICIENT?
-                String inviteUID = partyName + "_" + senderUID +"_" + recipientUID; //allows for duplicate party names to exist and users can send invites to the same user for different parties
-                String partyUID =  partyName + "_" + senderUID; //identifies creator of party as host
+                String inviteUID = partyName + "_" + senderUID + "_" + recipientUID; //allows for duplicate party names to exist and users can send invites to the same user for different parties
+                String partyUID = partyName + "_" + senderUID; //identifies creator of party as host
                 Invite newInvite = new Invite(partyUID, partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date);
-                databaseRef.child("Invites").child(inviteUID).setValue(newInvite);
+                databaseRef.child("Invites/" + inviteUID).setValue(newInvite);
                 //RESOLVED: MODIFY SENT/RECEIVED KEYS TO ALLOW USERS TO SEND MULTIPLE INVITES IF PARTY IS DIFFERENT
 
                 //UPON NEW PARTY INVITE, CREATE PARTY ENTRY
                 Party newParty = new Party(partyName, time, date);
                 databaseRef.child("Parties/" + partyUID).setValue(newParty);
+                databaseRef.child("Parties/" + partyUID).child("members").child(senderUID).setValue(true);
                 partyNameToLookupKey.put(partyName, partyUID);
 
                 //update user membership SENDER ONLY. RECIPIENT BECOMES MEMBER ON ACCEPTANCE
@@ -412,6 +409,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
     private void generateAlertDialogExistingPartyInvite(final String senderUID, final String recipientUID, final String senderDisplayName, final String recipientDisplayName) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ViewActiveUsersActivity.this);
         LayoutInflater inflater = getLayoutInflater().from(ViewActiveUsersActivity.this);
@@ -430,17 +428,6 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, listPartyOptions);
         partySelectSpinner.setAdapter(arrayAdapter);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        partySelectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(TAG, "itemSelected"+ adapterView.getChildAt(0));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         if (listPartyOptions.isEmpty()) {
             Toast.makeText(ViewActiveUsersActivity.this, "Not currently in any parties.", Toast.LENGTH_SHORT).show();
@@ -457,21 +444,21 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             Party queriedParty = snapshot.getValue(Party.class);
+                            Log.d(TAG, "queriedPartyReceived");
                             //PERFORM LOGIC CHECK TO SEE IF USER IS ALREADY IN PARTY. IF NOT, THEN CREATE AND SEND INVITE.
                             DataSnapshot memberList = snapshot.child("members"); //CHECK MEMBER LIST
                             if (memberList.hasChild(recipientUID)) {
                                 Toast.makeText(ViewActiveUsersActivity.this, "User is already in that party.", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "userInPartyAlready");
                             } else {
                                 Invite existingPartyInvite = new Invite(partyUID, partyName, currentUserInfo.getUID(), currentUserInfo.getDisplayName(), recipientUID, recipientDisplayName, queriedParty.getTime(), queriedParty.getDate());
                                 databaseRef.child("Invites/" + party_sender_recipient).setValue(existingPartyInvite);
                                 Toast.makeText(ViewActiveUsersActivity.this, "Invite sent!", Toast.LENGTH_SHORT).show();
-
                             }
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-
                         }
                     });
 
@@ -480,29 +467,25 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
             builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-
                 }
             });
         }
         builder.setTitle("Select a party to invite user to:");
         AlertDialog dialog = builder.create();
-        dialog.show();    }
+        dialog.show();
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
-        for (Map.Entry<DatabaseReference, ValueEventListener> entry: mDatabaseRefValEventListenerMap.entrySet()) {
+        for (Map.Entry<DatabaseReference, ValueEventListener> entry : mDatabaseRefValEventListenerMap.entrySet()) {
             DatabaseReference ref = entry.getKey();
             ValueEventListener listener = entry.getValue();
             ref.removeEventListener(listener);
         }
-        for (Map.Entry<Query, ChildEventListener> entry: mQueryChildListenerMap.entrySet()) {
+        for (Map.Entry<Query, ChildEventListener> entry : mQueryChildListenerMap.entrySet()) {
             Query query = entry.getKey();
             ChildEventListener listener = entry.getValue();
-            query.removeEventListener(listener);
-        }
-        for (Map.Entry<Query, ValueEventListener> entry: mQueryValListenerMap.entrySet()) {
-            Query query = entry.getKey();
-            ValueEventListener listener = entry.getValue();
             query.removeEventListener(listener);
         }
     }
@@ -511,6 +494,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
     }
+
     private void launchLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);

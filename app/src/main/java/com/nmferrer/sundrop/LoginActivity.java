@@ -40,9 +40,6 @@ public class LoginActivity extends AppCompatActivity {
     private ConstraintLayout constraintLayout;
     private AnimationDrawable animationDrawable;
 
-    private boolean requireEmailVerification = false;
-    //TODO: UNTIL I CAN FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFO
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,17 +107,16 @@ public class LoginActivity extends AppCompatActivity {
         }//handle case where user creates account but no email received, disappears otherwise
 
         //TODO: UNTIL I CAN FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFO
-        if (requireEmailVerification) {
-            if (mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()) {
-                resendConfirmationButton.setVisibility(View.VISIBLE);
-            }
-            resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    sendEmailVerification();
-                }
-            });
+        if (mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()) {
+            resendConfirmationButton.setVisibility(View.VISIBLE);
         }
+        resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendEmailVerification();
+            }
+        });
+
     }
 
     //ACCOUNT HANDLING
@@ -137,20 +133,14 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createUserWithEmail:success");
 
-                            UserInfo userInfo = new UserInfo(mAuth.getUid(), email, trimEmail(email));
+                            UserInfo userInfo = new UserInfo(mAuth.getUid(), trimEmail(email));
                             Log.d(TAG, "userInfoCreated:success");
 
                             databaseRef.child("Users").child(mAuth.getUid()).setValue(userInfo);
                             Log.d(TAG, "databasePushUser:success");
-                            if (requireEmailVerification) {
-                                sendEmailVerification();
-                                Toast.makeText(LoginActivity.this, "Account created successfully! A confirmation email will be arriving shortly.",
-                                        Toast.LENGTH_SHORT).show();
-                            } else {
-                                launchHome();
-                                Toast.makeText(LoginActivity.this, "Account created successfully! Logging in...",
-                                        Toast.LENGTH_SHORT).show();
-                            }
+                            sendEmailVerification();
+                            Toast.makeText(LoginActivity.this, "Account created successfully! A confirmation email will be arriving shortly.",
+                                    Toast.LENGTH_SHORT).show();
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -166,35 +156,36 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithEmail:success");
-                            Toast.makeText(LoginActivity.this, "Sign-in successful.", Toast.LENGTH_SHORT).show();
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (requireEmailVerification) { //TODO: UNTIL I FIGURE OUT FIREBASE SECURITY RULES, DO NOT STORE PERSONAL INFORMATION
-                                if (user.isEmailVerified()) {
-                                    Log.d(TAG, "isUserVerified:true");
-                                    launchHome();
-                                } else {
-                                    Log.d(TAG, "isUserVerified:false");
-                                    Toast.makeText(LoginActivity.this, "Please verify your email before signing in.", Toast.LENGTH_SHORT).show();
-                                }
-                            } else {
-                                launchHome();
-                            }
-                        } else {
-                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInWithEmail:success");
+                    Toast.makeText(LoginActivity.this, "Sign-in successful.", Toast.LENGTH_SHORT).show();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user.isEmailVerified()) {
+                        Log.d(TAG, "isUserVerified:true");
+                        launchHome();
+                    } else {
+                        Log.d(TAG, "isUserVerified:false");
+                        Toast.makeText(LoginActivity.this, "Please verify your email before signing in.", Toast.LENGTH_SHORT).show();
+                        //TODO: INSERT DIALOG TO PROMPT RESEND
                     }
-                });
+                } else {
+                    Log.w(TAG, "signInWithEmail:failure", task.getException());
+                    Toast.makeText(LoginActivity.this, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    public void sendEmailVerification() {
-        // [START send_email_verification]
+    private void launchHome() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
+    }
+
+    private void sendEmailVerification() {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
 
@@ -207,7 +198,10 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
-        // [END send_email_verification]
+    }
+
+    private void generateResendConfirmationDialog() {
+
     }
 
     //VALIDATE FORM
@@ -231,15 +225,7 @@ public class LoginActivity extends AppCompatActivity {
         return valid;
     }
 
-    private void launchUserSeek() {
-        Intent intent = new Intent(this, ViewActiveUsersActivity.class);
-        startActivity(intent);
-    }
 
-    private void launchHome() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        startActivity(intent);
-    }
 
     private String trimEmail(String email) {
         int endIndex = email.indexOf('@');
