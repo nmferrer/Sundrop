@@ -239,7 +239,7 @@ public class SettingsActivity extends AppCompatActivity {
                     if (savedInfo.getSeeking() != null) {
                         editTextSeeking.setText(savedInfo.getSeeking());
                     }
-                    if (!savedInfo.getAvailability().equals("")) {
+                    if (snapshot.hasChild("availability")) {
                         //parse String and fill appropriate fields
                         String temp = savedInfo.getAvailability().trim();
                         String[] availabilityArr = temp.split("\n");
