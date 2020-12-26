@@ -36,6 +36,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 /*
 The main bulk of the application.
 Upon confirming and invitation, the user will have access to a party with other users.
@@ -45,6 +47,9 @@ Users can:
     Postpone, cancel, or leave the party
     Invite new members
  */
+
+//TODO: On title click, prompt user to save to calendar?
+
 public class PartyChatActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
@@ -63,9 +68,10 @@ public class PartyChatActivity extends AppCompatActivity {
     private String currentUID;
     private UserInfo currentUserInfo;
     private String currentPartyID;
-
+    private ArrayList<String> userListDisplayNames;
     //Listeners
     private FirebaseListAdapter<Message> adapter;
+
     //Debug
     private final String TAG = "PARTY_CHAT_DEBUG";
 
@@ -135,10 +141,9 @@ public class PartyChatActivity extends AppCompatActivity {
 
         //https://code.tutsplus.com/tutorials/how-to-create-an-android-chat-app-using-firebase--cms-27397
 
-        //NOTE: QUERIES MUST ACCESS ALL ENTRIES TO FILTER RELEVANT MESSAGES
-        Query queryCurrentParty = databaseRef.child("Messages").orderByChild("partyID").equalTo(currentPartyID);
+        DatabaseReference messagesRef = databaseRef.child("Messages/" + currentPartyID);
         FirebaseListOptions<Message> options = new FirebaseListOptions.Builder<Message>()
-                .setQuery(queryCurrentParty, Message.class)
+                .setQuery(messagesRef, Message.class)
                 .setLayout(R.layout.message)
                 .build();
         adapter = new FirebaseListAdapter<Message>(options) {
@@ -152,6 +157,7 @@ public class PartyChatActivity extends AppCompatActivity {
             }
         };
         listViewChatLog.setAdapter(adapter);
+
     }
 
     @Override
@@ -173,6 +179,8 @@ public class PartyChatActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
+
+
     }
 
     @Override
@@ -184,20 +192,21 @@ public class PartyChatActivity extends AppCompatActivity {
     private void sendMessage(EditText editTextChatMessage, String partyID, String senderUID, String senderDisplayName) {
         String messageText = editTextChatMessage.getText().toString();
         if (!messageText.equals("")) {
-            Message chatMessage = new Message(messageText, senderUID, senderDisplayName, partyID);
+            Message chatMessage = new Message(messageText, senderUID, senderDisplayName);
 
             DatabaseReference messagesRef = databaseRef.child("Messages");
-            messagesRef.push().setValue(chatMessage);
+            messagesRef.child(partyID).push().setValue(chatMessage);
             Log.d(TAG, "messageSentSuccess " + chatMessage.getMessageSenderDisplayName() + ": " + chatMessage.getMessageText());
             editTextChatMessage.setText("");
         }
     }
 
-    private void generateUsersListDialog() {
 
+    private void generateUsersListDialog() {
+        //TODO: Query party entry, pull UIDs, and return display names
     }
     private void inviteUserToExistingParty() {
-
+        //TODO: Query online users, display users not in current party
     }
 
     private void generateLeavePartyDialog(final String partyName)  {
@@ -218,7 +227,7 @@ public class PartyChatActivity extends AppCompatActivity {
             }
         });
 
-        builder.setMessage("Would you like to leave party: " + partyName + "?");
+        builder.setMessage("Would you like to leave party?:\n" + partyName);
         AlertDialog dialog = builder.create();
         dialog.show();
     }

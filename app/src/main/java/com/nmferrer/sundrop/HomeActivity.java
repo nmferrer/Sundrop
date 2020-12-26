@@ -189,10 +189,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-    }
-    @Override
     protected void onResume() {
         super.onResume();
         partySelectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

@@ -15,16 +15,14 @@ public class Message {
     private String messageText;
     private String messageSenderUID;
     private String messageSenderDisplayName;
-    private String partyID;
 
     public Message() {
     }
 
-    public Message(String messageText, String messageSenderUID, String messageSenderDisplayName, String partyID) {
+    public Message(String messageText, String messageSenderUID, String messageSenderDisplayName) {
         this.messageText = messageText;
         this.messageSenderUID = messageSenderUID;
         this.messageSenderDisplayName = messageSenderDisplayName;
-        this.partyID = partyID;
     }
 
     public String getMessageText() {
@@ -51,11 +49,4 @@ public class Message {
         this.messageSenderDisplayName = messageSenderDisplayName;
     }
 
-    public String getPartyID() {
-        return partyID;
-    }
-
-    public void setPartyID(String partyID) {
-        this.partyID = partyID;
-    }
 }

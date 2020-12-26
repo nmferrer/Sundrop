@@ -33,7 +33,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -178,7 +177,6 @@ public class SettingsActivity extends AppCompatActivity {
                     builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { //Alert Dialog Confirmed
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            //TODO: ENSURE THIS DOES NOT OVERWRITE ADDITIONAL ENTRIES
                             DatabaseReference updatedProfile = databaseRef.child("Users").child(UID);
                             updatedProfile.child("displayName").setValue(updateDisplayName);
                             updatedProfile.child("seeking").setValue(updateSeeking);
@@ -228,7 +226,6 @@ public class SettingsActivity extends AppCompatActivity {
         if (firebaseUser != null) {
             String UID = currentUser.getUid();
             editTextEmail.setText(mAuth.getCurrentUser().getEmail());
-            //WRITES TO USERS
             ValueEventListener profileListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -244,7 +241,7 @@ public class SettingsActivity extends AppCompatActivity {
                         String temp = savedInfo.getAvailability().trim();
                         String[] availabilityArr = temp.split("\n");
                         for (String s: availabilityArr) {
-                            //STRINGS ARE GUARANTEED TO FOLLOW FORMAT (DAY: TIME AM|PM TO TIME AM|PM) AND BE OF SIZE 6
+                            //ASSUMES STRINGS ARE GUARANTEED TO FOLLOW FORMAT (DAY: TIME AM|PM TO TIME AM|PM) AND BE OF SIZE 6
                             //e.g. Thursday: 10:00 AM to 11:00 PM
                             s = s.trim();
                             Log.d(TAG, s);
@@ -263,7 +260,6 @@ public class SettingsActivity extends AppCompatActivity {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    //DATA ACCESS CANCELLED
                 }
             };
             databaseRef.child("Users").child(UID).addValueEventListener(profileListener);

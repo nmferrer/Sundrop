@@ -39,7 +39,6 @@ public class LoginActivity extends AppCompatActivity {
     private EditText fieldPassword;
     private Button createAccountButton;
     private Button signInButton;
-    private Button resendConfirmationButton;
     private ConstraintLayout constraintLayout;
     private AnimationDrawable animationDrawable;
 
@@ -75,7 +74,6 @@ public class LoginActivity extends AppCompatActivity {
         fieldPassword = findViewById(R.id.editTextPassword);
         createAccountButton = findViewById(R.id.createAccountButton);
         signInButton = findViewById(R.id.signInButton);
-        resendConfirmationButton = findViewById(R.id.resendConfirmationButton);
 
         createAccountButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,17 +85,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 signIn(fieldEmail.getText().toString(), fieldPassword.getText().toString());
-            }
-        });
-
-        //handle case where user creates account but no email received, disappears otherwise
-        if (mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()) {
-            resendConfirmationButton.setVisibility(View.VISIBLE);
-        }
-        resendConfirmationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sendEmailVerification();
             }
         });
     }

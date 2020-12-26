@@ -378,12 +378,12 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                 String date = editTextDate.getText().toString();
                 String time = editTextTime.getText().toString();
 
-                //TODO: INVITES ARE SOLELY HANDLED THROUGH INVITES TABLE. NO NEED FOR USER WRITES
                 //IS THIS EFFICIENT?
-                String inviteUID = partyName + "_" + senderUID + "_" + recipientUID; //allows for duplicate party names to exist and users can send invites to the same user for different parties
                 String partyUID = partyName + "_" + senderUID; //identifies creator of party as host
                 Invite newInvite = new Invite(partyUID, partyName, senderUID, senderDisplayName, recipientUID, recipientDisplayName, time, date);
-                databaseRef.child("Invites/" + inviteUID).setValue(newInvite);
+                databaseRef.child("Invites/" + senderUID + "/sent/" + partyUID).setValue(newInvite);
+                databaseRef.child("Invites/" + recipientUID + "/received/" + partyUID).setValue(newInvite);
+
                 //RESOLVED: MODIFY SENT/RECEIVED KEYS TO ALLOW USERS TO SEND MULTIPLE INVITES IF PARTY IS DIFFERENT
 
                 //UPON NEW PARTY INVITE, CREATE PARTY ENTRY
@@ -439,7 +439,7 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                     //GIVEN PARTY NAME, GENERATE INVITE
                     final String partyName = listPartyOptions.get(partySelectSpinner.getSelectedItemPosition());
                     final String partyUID = partyNameToLookupKey.get(partyName);
-                    final String party_sender_recipient = partyName + "_" + senderUID + "_" + recipientUID;
+                    Log.d(TAG, "Listener attached to: " + partyName + " key:" + partyUID);
                     databaseRef.child("Parties/" + partyUID).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -452,7 +452,8 @@ public class ViewActiveUsersActivity extends AppCompatActivity {
                                 Log.d(TAG, "userInPartyAlready");
                             } else {
                                 Invite existingPartyInvite = new Invite(partyUID, partyName, currentUserInfo.getUID(), currentUserInfo.getDisplayName(), recipientUID, recipientDisplayName, queriedParty.getTime(), queriedParty.getDate());
-                                databaseRef.child("Invites/" + party_sender_recipient).setValue(existingPartyInvite);
+                                databaseRef.child("Invites/" + senderUID + "/sent/" + partyUID).setValue(existingPartyInvite);
+                                databaseRef.child("Invites/" + recipientUID + "/received/" + partyUID).setValue(existingPartyInvite);
                                 Toast.makeText(ViewActiveUsersActivity.this, "Invite sent!", Toast.LENGTH_SHORT).show();
                             }
                         }
