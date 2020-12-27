@@ -80,12 +80,10 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText editTextSaturdayEnd;
 
     //Pulled Data
-    private UserInfo updateUserInfo;
     private String oldDisplayName;
     private String oldEmail;
     //Listeners
     private HashMap<DatabaseReference, ValueEventListener> mValueEventListenerMap;
-    private HashMap<DatabaseReference, ChildEventListener> mChildEventListenerMap;
     //Debug
     private final String TAG = "SETTINGS_DEBUG";
 
@@ -106,8 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         databaseRef = FirebaseDatabase.getInstance().getReference();
-        mValueEventListenerMap = new HashMap<DatabaseReference, ValueEventListener>();
-        mChildEventListenerMap = new HashMap<DatabaseReference, ChildEventListener>();
+        mValueEventListenerMap = new HashMap<>();
 
         //UI Setup
         editTextDisplayName = findViewById(R.id.editTextDisplayName);
@@ -157,7 +154,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 //validate forms
                 if (!validateForm()) {
-                    Toast.makeText(SettingsActivity.this, "Required fields must be filled.",
+                    Toast.makeText(SettingsActivity.this, "Invalid input.",
                             Toast.LENGTH_SHORT).show();
                 } else {
                     final String UID, updateDisplayName, updateEmail, updateSeeking, updateAvailability;
@@ -241,6 +238,7 @@ public class SettingsActivity extends AppCompatActivity {
                         String temp = savedInfo.getAvailability().trim();
                         String[] availabilityArr = temp.split("\n");
                         for (String s: availabilityArr) {
+                            //TODO: CREATE REGEX EXPRESSION TO MORE PROPERLY CATCH INPUT
                             //ASSUMES STRINGS ARE GUARANTEED TO FOLLOW FORMAT (DAY: TIME AM|PM TO TIME AM|PM) AND BE OF SIZE 6
                             //e.g. Thursday: 10:00 AM to 11:00 PM
                             s = s.trim();
@@ -275,38 +273,44 @@ public class SettingsActivity extends AppCompatActivity {
             ValueEventListener listener = entry.getValue();
             ref.removeEventListener(listener);
         }
-        for (Map.Entry<DatabaseReference, ChildEventListener> entry: mChildEventListenerMap.entrySet()) {
-            DatabaseReference ref = entry.getKey();
-            ChildEventListener listener = entry.getValue();
-            ref.removeEventListener(listener);
-        }
     }
 
     private boolean validateForm() {
         //TODO: Make call to validate times.
-        boolean valid = true;
+        boolean validFields = true;
         String email = editTextEmail.getText().toString();
         String displayName = editTextDisplayName.getText().toString();
 
         //time checks here?
         if (TextUtils.isEmpty(email)) {
             editTextEmail.setError("Required.");
-            valid = false;
+            validFields = false;
         } else {
             editTextEmail.setError(null);
         }
         if (TextUtils.isEmpty(displayName)) {
             editTextDisplayName.setError("Required.");
-            valid = false;
+            validFields = false;
         } else {
             editTextDisplayName.setError(null);
         }
-        return valid;
+        Log.d(TAG, "emptyFieldsCheckSuccess");
+        return validFields && validateAllTimes();
     }
 
     private boolean validateTimes(EditText startTime, EditText endTime) {
-        //TODO: LOGIC ASSUMES USER INPUTS "FRIENDLY" FORMAT
+        //TODO: LOGIC ASSUMES USER INPUTS "FRIENDLY" FORMAT, FIX TO BE MORE RIGOROUS
         //MODIFY REGEX TO BE MORE VERSATILE
+        String startStr = startTime.getText().toString();
+        String endStr = endTime.getText().toString();
+        if(TextUtils.isEmpty(startStr) && TextUtils.isEmpty(endStr)) {
+            return true;
+        } else if (TextUtils.isEmpty(startStr) && !TextUtils.isEmpty(endStr) ||
+                    !TextUtils.isEmpty(startStr) && TextUtils.isEmpty(endStr)) {
+            startTime.setError("Both fields must be filled.");
+            endTime.setError("Both fields must be filled.");
+            return false;
+        }
 
         //LOGIC ASSUMES TEXT FOLLOWS FORMAT XX:XX [AM|PM]
         String[] timeAmPmStart = startTime.getText().toString().split(" ");
@@ -329,31 +333,38 @@ public class SettingsActivity extends AppCompatActivity {
             return false;
         }
         if (amOrPmStart.equals("PM") && amOrPmEnd.equals("AM")) { //PM TO AM
-            startTime.setError("Start time must be later than end time.");
+            startTime.setError("Start time must be earlier than end time.");
             return false;
         }
         if (amOrPmStart.equals(amOrPmEnd)) { //BOTH AM OR BOTH PM
             if (startTimeHour != 12 && startTimeHour > endTimeHour) {
-                startTime.setError("Start time must be later than end time.");
+                startTime.setError("Start time must be earlier than end time.");
                 return false;
             } else if (startTimeHour == endTimeHour) {
                 if (startTimeMin > endTimeMin) {
-                    startTime.setError("Start time must be later than end time.");
+                    startTime.setError("Start time must be earlier than end time.");
                 }
             }
         }
-        if (!amOrPmStart.equals(amOrPmEnd)) { //AM TO PM
-            //DO NOTHING
-        }
+        //AM TO PM: DO NOTHING
         startTime.setError(null);
         endTime.setError(null);
         return true;
     }
 
+    private boolean validateAllTimes() {
+        return validateTimes(editTextSundayStart, editTextSundayEnd) &&
+                validateTimes(editTextMondayStart, editTextMondayEnd) &&
+                validateTimes(editTextTuesdayStart, editTextTuesdayEnd) &&
+                validateTimes(editTextWednesdayStart, editTextWednesdayEnd) &&
+                validateTimes(editTextThursdayStart, editTextThursdayEnd) &&
+                validateTimes(editTextFridayStart, editTextFridayEnd) &&
+                validateTimes(editTextSaturdayStart, editTextSaturdayEnd);
+    }
+
     private String generateAvailabilityString() {
         String userAvailability = "";
-        //check checkboxes
-        //append appropriate times
+        //check if filled append appropriate times
         if (!TextUtils.isEmpty(editTextSundayStart.getText().toString())  && !TextUtils.isEmpty(editTextSundayEnd.getText().toString()))
             userAvailability += "\tSunday: "
                     + editTextSundayStart.getText().toString() + " to "
