@@ -5,5 +5,5 @@ Users can share their availability and interests. If one user finds another that
 
 Work In Progress Features:
 
-*Save play session details to Google Calendar  
+* Save play session details to Google Calendar  
   
