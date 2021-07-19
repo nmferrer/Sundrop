@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#68787C</color>
+    <color name="colorAccent">#BDBDBD</color>
+    <color name="colorPrimaryHint">#929BA7</color>
+
+    <color name="black">#000000</color>
+
+    <color name="Transparent">#00ffffff</color>
+    <color name="homePink">#EEC0F5</color>
+    <color name="homeBlue">#24B1E7</color>
+
+    <color name="colorGradientStart">#172121</color>
+    <color name="colorGradientCenter">#444554</color>
+    <color name="colorGradientEnd">#7F7B82</color>
+
+    <color name="colorGradientStartChat">#7F7B82</color>
+    <color name="colorGradientCenterChat">#BFACB5</color>
+    <color name="colorGradientEndChat">#E5D0CC</color>
+
+    <color name="Bone">#D8D0C1</color>
+    <color name="Raisin_Black">#231F20</color>
+    <color name="International_Orange_Golden_Gate_Bridge">#BB4430</color>
+    <color name="Dark_Liver_Horses">#60463B</color>
+    <color name="Deep_Taupe">#856A5D</color>
+</resources>
