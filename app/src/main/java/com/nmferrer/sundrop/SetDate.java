@@ -9,6 +9,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 //Modelled after the following helper for TimePickerDialog.
 //https://stackoverflow.com/questions/17901946/timepicker-dialog-from-clicking-edittext
@@ -36,7 +37,8 @@ public class SetDate implements View.OnFocusChangeListener, DatePickerDialog.OnD
     }
     @Override
     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-        this.editText.setText(String.format("%d/%d/%d", month, day, year));
+        month+=1;
+        this.editText.setText(String.format(Locale.getDefault(), "%d/%d/%d", month, day, year)); //Calendar.MONTH is 0-based
     }
 
 
