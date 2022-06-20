@@ -1,5 +1,4 @@
 # Sundrop Group Finder (Android)
-Demo APK Download: https://drive.google.com/file/d/17hiyAwsDZcPVtVYLSBMqN5f8WNu7GrRq/view?usp=sharing
 
 Android application designed to help users chat and schedule gameplay sessions. Made using Java, Google Firebase Authentication, and Firebase Realtime Database.
 
